@@ -1,0 +1,48 @@
+name: Incorrect guidance
+description: An AI agent produced a wrong FSD structure because of something in this skill.
+title: "fix: Incorrect guidance: "
+labels: ["bug"]
+body:
+  - type: input
+    id: agent
+    attributes:
+      label: Agent used
+      placeholder: Claude Code, Claude.ai, Cursor, etc.
+    validations:
+      required: true
+
+  - type: textarea
+    id: task
+    attributes:
+      label: What you asked the agent to do
+      description: The prompt, instruction, or task given to the agent.
+    validations:
+      required: true
+
+  - type: textarea
+    id: project-context
+    attributes:
+      label: Project context
+      description: The framework, existing structure, or any relevant setup the agent was working in.
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: What the agent produced
+      description: The output, code snippet, or structure the agent generated.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected instead
+      description: What the correct FSD-aligned output would have looked like, per fsd.how.
+    validations:
+      required: true
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Suspected source in this repo
+      description: Optional. If you have a guess about which file or section caused the wrong output, let us know.
