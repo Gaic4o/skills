@@ -1,4 +1,4 @@
-# Feature-Sliced Design — Agent Skills
+# Feature-Sliced Design: Agent Skills
 
 Agent skills that teach AI coding agents [Feature-Sliced Design (FSD)](https://fsd.how) v2.1 architectural methodology.
 
@@ -18,10 +18,13 @@ Apply FSD v2.1 principles when structuring frontend projects. The agent learns l
 
 - Setting up or reorganizing a frontend project structure
 - Deciding where to place code (pages vs. features vs. entities vs. shared)
+- Placing static assets (images, icons, fonts, PDFs) in the right slice or layer
+- Grouping closely related slices for navigation as the project grows
 - Resolving cross-import issues or evaluating the @x pattern
+- Deciding whether to create or remove an entity, or whether to skip the entities layer entirely
 - Migrating from FSD v2.0 or a non-FSD codebase
-- Integrating FSD with Next.js, Nuxt, or Vite
-- Implementing auth, API request handling, or state management within FSD
+- Integrating FSD with Next.js (App Router or Pages Router), Nuxt, Vite, or Astro
+- Implementing auth, API request handling, or state management (Redux, TanStack Query) within FSD
 
 **Examples:**
 
@@ -34,7 +37,11 @@ Where should I put this auth logic?
 ```
 
 ```text
-These two entities need to import from each other — how do I fix this?
+These two entities need to import from each other. How do I fix this?
+```
+
+```text
+Where should I put hero images for my landing page?
 ```
 
 ## Skill Structure
@@ -43,11 +50,13 @@ These two entities need to import from each other — how do I fix this?
 feature-sliced-design/
   SKILL.md                         Core rules and decision framework
   references/
-    layer-structure.md             Detailed folder structures per layer
-    cross-import-patterns.md       Cross-import resolution strategies and @x
+    layer-structure.md             Detailed folder structures per layer (incl. slice groups)
+    asset-handling.md              Where to place images, icons, fonts, and other static assets
+    cross-import-patterns.md       Cross-import resolution: 4 strategies for features/widgets, @x for entities
+    excessive-entities.md          Keeping the entities layer clean: when to skip, what to extract
     migration-guide.md             v2.0→v2.1 and non-FSD migration
-    framework-integration.md       Next.js, Nuxt, Vite/CRA setup and RSC
-    practical-examples.md          Auth, types, API, Redux, React Query
+    framework-integration.md       Next.js (App Router & Pages Router), Nuxt, Vite/CRA, Astro setup
+    practical-examples.md          Auth, types, API, Redux, TanStack Query (React Query)
 ```
 
 The agent reads only `SKILL.md` by default. Reference files are loaded on demand based on the task.
@@ -63,9 +72,9 @@ When adding or modifying reference files, keep these constraints in mind:
 
 ## References
 
-- [fsd.how](https://fsd.how) — FSD official documentation
-- [Steiger](https://github.com/feature-sliced/steiger) — Official FSD linter
-- [skills.sh](https://skills.sh) — Agent skills directory
+- [fsd.how](https://fsd.how): FSD official documentation
+- [Steiger](https://github.com/feature-sliced/steiger): Official FSD linter
+- [skills.sh](https://skills.sh): Agent skills directory
 
 ## License
 
