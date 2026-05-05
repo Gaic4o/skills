@@ -20,6 +20,10 @@ jobs:
       - name: SKILL.md body size
         run: |
           fm_end=$(awk '/^---$/{c++; if(c==2){print NR; exit}}' feature-sliced-design/SKILL.md)
+          if ! [[ "$fm_end" =~ ^[0-9]+$ ]]; then
+            echo "::error file=feature-sliced-design/SKILL.md::SKILL.md frontmatter is malformed or missing a closing --- delimiter"
+            exit 1
+          fi
           total=$(wc -l < feature-sliced-design/SKILL.md)
           body=$((total - fm_end))
           echo "SKILL.md body: $body / 500 lines"
