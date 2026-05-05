@@ -41,7 +41,7 @@ jobs:
       # serves as an implicit frontmatter validator.
       - name: Test skill install
         run: |
-          set -e
+          set -euo pipefail
           npx -y skills add ./ \
             --skill feature-sliced-design \
             --agent claude-code \
