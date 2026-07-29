@@ -63,23 +63,16 @@ The agent reads only `SKILL.md` by default. Reference files are loaded on demand
 
 ## Contributing
 
-## Contributing
-
 Run the validator before opening a pull request:
 
 ```bash
 node .github/scripts/validate-skills.mjs
 ```
 
-It enforces repository validation rules based on the guidance in [vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills) `AGENTS.md`:
+It enforces the skill package rules this repository follows, based on the guidance in [vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills) `AGENTS.md`:
 
 - `SKILL.md` stays under 500 lines to keep the initial skill context lightweight
 - Every `references/<file>.md` path mentioned in `SKILL.md` resolves to an existing file
-
-It also enforces conventions specific to this repository:
-
-- Every `references/<file>.md` path mentioned in the skill resolves to an existing file
-- Every reference file is listed in the `Conditional References` section of `SKILL.md`
 
 ## References
 
