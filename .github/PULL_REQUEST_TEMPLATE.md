@@ -1,14 +1,13 @@
 ## Summary
 
-What this PR changes, and why.
+Describe what this PR changes and why.
 
 ## Related issue
 
-Closes #
+Closes # <!-- Optional -->
 
 ## Checklist
 
-- [ ] Content reflects current fsd.how wording, paraphrased rather than copied.
-- [ ] File size limits: SKILL.md under 500 lines, each reference 200 to 500 lines, combined under 1,000 lines.
-- [ ] If a reference was split due to size, the conditional-loading section in SKILL.md was updated.
-- [ ] Internal links still resolve.
+- [ ] `python3 .github/scripts/validate-skills.py` passes locally.
+- [ ] If a reference file was added, renamed, moved, removed, or split, the `Conditional References` section in `SKILL.md` was updated.
+- [ ] If validation behavior was changed, the validation rules in the README were updated accordingly.
