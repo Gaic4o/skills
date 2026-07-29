@@ -63,12 +63,24 @@ The agent reads only `SKILL.md` by default. Reference files are loaded on demand
 
 ## Contributing
 
-When adding or modifying reference files, keep these constraints in mind:
+## Contributing
 
-- `SKILL.md` body ≤ 500 lines
-- Each reference file: 200–500 lines
-- `SKILL.md` + any single reference ≤ 1,000 lines combined
-- If a reference exceeds 500 lines, split it and update the conditional loading section at the bottom of `SKILL.md`
+Run the validator before opening a pull request:
+
+```bash
+python3 .github/scripts/validate-skills.py
+```
+
+It enforces repository validation rules based on the guidance in [vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills) `AGENTS.md`:
+
+- The `SKILL.md` body contains no more than 500 lines to keep the initial skill context lightweight
+- The frontmatter `name` matches the directory name and uses kebab-case
+- The frontmatter `description` is present and does not exceed 1,024 characters
+
+It also enforces conventions specific to this repository:
+
+- Every `references/<file>.md` path mentioned in the skill resolves to an existing file
+- Every reference file is listed in the `Conditional References` section of `SKILL.md`
 
 ## References
 
