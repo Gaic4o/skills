@@ -3,62 +3,77 @@ name: validate
 on:
   pull_request:
     paths:
-      - 'feature-sliced-design/**'
-      - 'README.md'
-      - '.github/workflows/validate.yml'
+      - "**/SKILL.md"
+      - "**/references/**"
+      - ".github/scripts/validate-skills.py"
+      - ".github/workflows/validate.yml"
   push:
     branches: [master]
+    paths:
+      - "**/SKILL.md"
+      - "**/references/**"
+      - ".github/scripts/validate-skills.py"
+      - ".github/workflows/validate.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validate-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   validate:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      # 1. SKILL.md body length must stay within the 500-line guidance.
-      # Source: vercel-labs/agent-skills AGENTS.md
-      - name: SKILL.md body size
-        run: |
-          fm_end=$(awk '/^---$/{c++; if(c==2){print NR; exit}}' feature-sliced-design/SKILL.md)
-          if ! [[ "$fm_end" =~ ^[0-9]+$ ]]; then
-            echo "::error file=feature-sliced-design/SKILL.md::SKILL.md frontmatter is malformed or missing a closing --- delimiter"
-            exit 1
-          fi
-          total=$(wc -l < feature-sliced-design/SKILL.md)
-          body=$((total - fm_end))
-          echo "SKILL.md body: $body / 500 lines"
-          if [ "$body" -gt 500 ]; then
-            echo "::error file=feature-sliced-design/SKILL.md::SKILL.md body is $body lines, exceeds the 500-line guidance"
-            exit 1
-          fi
-
-      # 2. Internal links must resolve. Skip external HTTP to keep CI fast.
-      - name: Internal links
-        uses: lycheeverse/lychee-action@v2
+      - uses: actions/setup-node@v6
         with:
-          args: --offline --no-progress feature-sliced-design/**/*.md README.md
-          fail: true
+          node-version: "24"
 
-      # 3. Install the skill via the official CLI to verify it loads.
-      # Pattern adopted from addyosmani/agent-skills.
-      # The CLI rejects skills with malformed frontmatter, so this also
-      # serves as an implicit frontmatter validator.
+      # Validate package structure, frontmatter, size limits,
+      # and local reference paths.
+      - name: Validate skill packages
+        run: python3 .github/scripts/validate-skills.py
+
+      # Verify that each skill can be installed through the official CLI.
       - name: Test skill install
         run: |
           set -euo pipefail
-          npx -y skills add ./ \
-            --skill feature-sliced-design \
-            --agent claude-code \
-            --copy -g -y
+          shopt -s nullglob
 
-          INSTALL_PATH="$HOME/.claude/skills/feature-sliced-design"
-          if [ ! -f "$INSTALL_PATH/SKILL.md" ]; then
-            echo "::error::skill not installed at $INSTALL_PATH"
-            ls -la "$HOME/.claude/skills/" || true
+          skill_files=(*/SKILL.md)
+
+          if ((${#skill_files[@]} == 0)); then
+            echo "::error::No root-level skill packages found"
             exit 1
           fi
-          if [ ! -d "$INSTALL_PATH/references" ]; then
-            echo "::error::references/ directory not installed"
-            exit 1
-          fi
-          echo "Skill installed and verified at $INSTALL_PATH"
+
+          for skill_md in "${skill_files[@]}"; do
+            skill="${skill_md%/SKILL.md}"
+
+            npx --yes skills@1.5.20 add "$GITHUB_WORKSPACE" \
+              --skill "$skill" \
+              --agent universal \
+              --copy \
+              --global \
+              --yes
+
+            install_path="$HOME/.config/agents/skills/$skill"
+
+            if [ ! -f "$install_path/SKILL.md" ]; then
+              echo "::error::$skill was not installed at $install_path"
+              exit 1
+            fi
+
+            if [ -d "$skill/references" ] &&
+               [ ! -d "$install_path/references" ]; then
+              echo "::error::$skill references/ directory was not installed"
+              exit 1
+            fi
+
+            echo "$skill installed and verified at $install_path"
+          done
