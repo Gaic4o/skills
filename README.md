@@ -68,14 +68,13 @@ The agent reads only `SKILL.md` by default. Reference files are loaded on demand
 Run the validator before opening a pull request:
 
 ```bash
-python3 .github/scripts/validate-skills.py
+node .github/scripts/validate-skills.mjs
 ```
 
 It enforces repository validation rules based on the guidance in [vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills) `AGENTS.md`:
 
-- The `SKILL.md` body contains no more than 500 lines to keep the initial skill context lightweight
-- The frontmatter `name` matches the directory name and uses kebab-case
-- The frontmatter `description` is present and does not exceed 1,024 characters
+- `SKILL.md` stays under 500 lines to keep the initial skill context lightweight
+- Every `references/<file>.md` path mentioned in `SKILL.md` resolves to an existing file
 
 It also enforces conventions specific to this repository:
 

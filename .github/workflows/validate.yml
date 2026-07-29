@@ -5,14 +5,14 @@ on:
     paths:
       - "**/SKILL.md"
       - "**/references/**"
-      - ".github/scripts/validate-skills.py"
+      - ".github/scripts/validate-skills.mjs"
       - ".github/workflows/validate.yml"
   push:
     branches: [master]
     paths:
       - "**/SKILL.md"
       - "**/references/**"
-      - ".github/scripts/validate-skills.py"
+      - ".github/scripts/validate-skills.mjs"
       - ".github/workflows/validate.yml"
 
 permissions:
@@ -37,7 +37,7 @@ jobs:
       # Validate package structure, frontmatter, size limits,
       # and local reference paths.
       - name: Validate skill packages
-        run: python3 .github/scripts/validate-skills.py
+        run: node .github/scripts/validate-skills.mjs
 
       # Verify that each skill can be installed through the official CLI.
       - name: Test skill install
