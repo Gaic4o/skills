@@ -62,10 +62,21 @@ jobs:
               --global \
               --yes
 
-            install_path="$HOME/.config/agents/skills/$skill"
+            # The CLI picks the install root itself, so probe the known
+            # locations rather than asserting one of them.
+            install_path=""
 
-            if [ ! -f "$install_path/SKILL.md" ]; then
-              echo "::error::$skill was not installed at $install_path"
+            for candidate in "$HOME/.agents/skills/$skill" \
+                             "$HOME/.config/agents/skills/$skill"; do
+              if [ -f "$candidate/SKILL.md" ]; then
+                install_path="$candidate"
+                break
+              fi
+            done
+
+            if [ -z "$install_path" ]; then
+              echo "::error::$skill was not installed under" \
+                   "$HOME/.agents/skills or $HOME/.config/agents/skills"
               exit 1
             fi
 
