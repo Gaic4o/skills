@@ -36,6 +36,26 @@ function readLines(filePath) {
   return lines;
 }
 
+function findBodyStart(filePath, lines) {
+  if (lines[0] !== "---") {
+    recordError(filePath, "SKILL.md is missing its frontmatter block", 1);
+    return null;
+  }
+
+  const closingDelimiter = lines.indexOf("---", 1);
+
+  if (closingDelimiter === -1) {
+    recordError(
+      filePath,
+      "SKILL.md frontmatter is missing its closing --- delimiter",
+      1,
+    );
+    return null;
+  }
+
+  return closingDelimiter + 1;
+}
+
 function recordError(filePath, message, lineNumber) {
   errorCount += 1;
 
@@ -79,15 +99,22 @@ function findSkillDirectories() {
 function validateSkill(skillDirectory) {
   const skillFile = path.join(skillDirectory, "SKILL.md");
   const lines = readLines(skillFile);
+  const bodyStart = findBodyStart(skillFile, lines);
+
+  // The limit applies to the body, which is what the agent loads when the
+  // skill activates. Frontmatter is metadata, so it is excluded.
+  const bodyLength =
+    bodyStart === null ? lines.length : lines.length - bodyStart;
 
   console.log(
-    `  ${path.basename(skillDirectory)}/SKILL.md: ` + `${lines.length} lines`,
+    `  ${path.basename(skillDirectory)}/SKILL.md: ` +
+      `${bodyLength} body lines`,
   );
 
-  if (lines.length >= SKILL_LINE_LIMIT) {
+  if (bodyLength >= SKILL_LINE_LIMIT) {
     recordError(
       skillFile,
-      `SKILL.md contains ${lines.length} lines; ` +
+      `SKILL.md body contains ${bodyLength} lines; ` +
         `it must stay under ${SKILL_LINE_LIMIT} lines`,
     );
   }

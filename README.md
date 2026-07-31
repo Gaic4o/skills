@@ -71,7 +71,7 @@ node .github/scripts/validate-skills.mjs
 
 It enforces the skill package rules this repository follows, based on the guidance in [vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills) `AGENTS.md`:
 
-- `SKILL.md` stays under 500 lines to keep the initial skill context lightweight
+- The `SKILL.md` body stays under 500 lines to keep the initial skill context lightweight. Frontmatter is excluded from the count.
 - Every `references/<file>.md` path mentioned in `SKILL.md` resolves to an existing file
 
 ## References
