@@ -340,6 +340,14 @@ shared/
   assets/            ← Branding assets shared across the app (use sparingly)
 ```
 
+The official API requests guide groups request functions under
+`shared/api/endpoints/` and re-exports them from `shared/api/index.ts`.
+The examples in this skill also show flat domain-named files (`client.ts`,
+`product.ts`) and per-controller folders (`example/get-example.ts`); treat
+those as variations of the same idea, not competing standards. Whatever the
+internal shape, consumers import from the segment index, or from a
+component folder's own index where Rule 4-2 allows one.
+
 ```typescript
 // shared/ui/Button/Button.tsx
 export const Button = ({ children, onClick, variant = 'primary' }) => (
