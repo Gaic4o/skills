@@ -2,8 +2,8 @@
 
 Concrete code patterns for authentication, type definitions, and API
 request handling within FSD structure. State management patterns (Redux,
-TanStack Query) are in `references/state-management.md`. Code samples are React; the placement
-rules are framework-agnostic.
+TanStack Query) are in `references/state-management.md`. Code samples are
+React; the placement rules are framework-agnostic.
 
 ## Authentication
 
@@ -214,7 +214,7 @@ used.
 
 The token store and current user state should be reset when the client's
 authentication state can no longer be maintained, such as in the following
-cases
+cases:
 
 - The user requests to log out.
 - The refresh token has expired or is invalid, causing the token refresh

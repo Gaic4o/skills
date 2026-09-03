@@ -20,11 +20,11 @@ framework adds or renames around them, not the layers' own internals.
 ## Next.js
 
 FSD works with both the App Router and the Pages Router. Next.js uses the
-`app/` and `pages/` folder names for its own routing. Those names collide with
-the FSD `app/` and `pages/` layers. Rename the FSD layers to `_app/` and `_pages/`
-(with the underscore prefix). Do this even if you only use one router. Keep the Next.js
-routing folders at the project root so `src/` holds only FSD code. The FSD
-linter (Steiger) expects this naming.
+`app/` and `pages/` folder names for its own routing. Those names collide
+with the FSD `app/` and `pages/` layers. Rename the FSD layers to `_app/`
+and `_pages/` (with the underscore prefix). Do this even if you only use
+one router. Keep the Next.js routing folders at the project root so `src/`
+holds only FSD code. The FSD linter (Steiger) expects this naming.
 
 ### Projects on the previously recommended pattern
 
@@ -90,12 +90,13 @@ export default function RootLayout({ children }) {
 export { ExamplePage as default, metadata } from '@/_pages/example';
 ```
 
-Always re-export both the component and `metadata`. Route files contain no logic.
+Always re-export both the component and `metadata`. Route files contain
+no logic.
 
 ### Pages Router
 
-The Pages Router uses `pages/` at the project root.
-Each route file should re-export the corresponding page module from the FSD `_pages/` layer.
+The Pages Router uses `pages/` at the project root. Each route file should
+re-export the corresponding page module from the FSD `_pages/` layer.
 
 ```text
 my-nextjs-project/
