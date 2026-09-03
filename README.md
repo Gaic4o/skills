@@ -20,6 +20,7 @@ Apply FSD v2.1 principles when structuring frontend projects. The agent learns l
 - Deciding where to place code (pages vs. features vs. entities vs. shared)
 - Placing static assets (images, icons, fonts, PDFs) in the right slice or layer
 - Grouping closely related slices for navigation as the project grows
+- Deciding where page layouts belong, or whether to use the widgets layer (discouraged)
 - Resolving cross-import issues or evaluating the @x pattern
 - Deciding whether to create or remove an entity, or whether to skip the entities layer entirely
 - Migrating from FSD v2.0 or a non-FSD codebase
