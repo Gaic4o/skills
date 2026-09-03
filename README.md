@@ -57,7 +57,8 @@ feature-sliced-design/
     excessive-entities.md          Keeping the entities layer clean: when to skip, what to extract
     migration-guide.md             v2.0→v2.1 and non-FSD migration
     framework-integration.md       Next.js (App Router & Pages Router), Nuxt, Vite/CRA, Astro setup
-    practical-examples.md          Auth, types, API, Redux, TanStack Query (React Query)
+    auth-and-api.md                Auth, type definitions, API request handling
+    state-management.md            Redux, TanStack Query (React Query)
 ```
 
 The agent reads only `SKILL.md` by default. Reference files are loaded on demand based on the task.

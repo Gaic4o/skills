@@ -476,11 +476,12 @@ Do **not** preload all references.
   or configuring path aliases:
   → Read `references/framework-integration.md`
 
-- **When implementing concrete code patterns** for authentication, API request
-  handling, type definitions, or state management (Redux, TanStack Query /
-  React Query, including query factories, infinite scroll, Suspense mode,
-  and `useMutationState`) within FSD structure:
-  → Read `references/practical-examples.md`
-  Note: If you already loaded `layer-structure.md` in this conversation,
-  avoid loading this file simultaneously. Address structure first, then load
-  patterns in a follow-up step if needed.
+- **When implementing authentication, type definitions, or API request
+  handling** as concrete code within FSD structure (token storage, login
+  flow, DTO placement, where a request function lives):
+  → Read `references/auth-and-api.md`
+
+- **When wiring state management** (Redux slices, TanStack Query / React
+  Query, including query factories, infinite scroll, Suspense mode, and
+  `useMutationState`) into FSD structure:
+  → Read `references/state-management.md`

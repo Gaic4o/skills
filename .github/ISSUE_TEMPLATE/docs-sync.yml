@@ -35,7 +35,8 @@ body:
         - references/cross-import-patterns.md
         - references/migration-guide.md
         - references/framework-integration.md
-        - references/practical-examples.md
+        - references/auth-and-api.md
+        - references/state-management.md
         - A new reference file may be needed
         - Not sure
     validations:

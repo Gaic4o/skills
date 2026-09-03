@@ -173,7 +173,7 @@ store updates.
 **Pages and a specific feature slice are not recommended.** Tokens are
 application-wide state: a token store inside `features/login` cannot be
 imported by other features, and one inside a page is unreachable from lower
-layers. See the auth section of `references/practical-examples.md` for the
+layers. See the auth section of `references/auth-and-api.md` for the
 full explanation.
 
 ### Decision summary
