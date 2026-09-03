@@ -9,9 +9,9 @@ sibling entities.
 
 The `entities` layer is one of the lower layers and is widely accessible.
 Every layer except `shared` can import from it. That global nature means
-changes to `entities` propagate widely, requiring careful design to avoid
-costly refactors. Adding an entity is cheap; removing one after many
-consumers depend on it is expensive.
+changes to `entities` propagate widely, so the boundaries need care up
+front to avoid costly refactors. Adding an entity is cheap; removing one
+after many consumers depend on it is expensive.
 
 ## How to keep entities clean
 
@@ -167,8 +167,8 @@ entities/
     index.ts
 ```
 
-One entity encapsulates the related logic. No `@x`, no cross-imports,
-no circular dependency risk.
+One entity encapsulates the related logic, so there is no `@x` file and
+no way for the sibling slices to form a cycle.
 
 The general rule: when several entities have `@x` dependencies on each
 other, treat that as a signal to merge the boundaries, not as something to

@@ -103,8 +103,6 @@ app/
 ```
 
 Theme variables, CSS resets, and font registrations are app-wide concerns.
-They bootstrap the application's visual layer the same way providers
-bootstrap the runtime layer.
 
 ## Public Folder
 
@@ -159,7 +157,7 @@ allows assets to live alongside the entrypoint. Both layouts are valid.
   ships a hero image should keep that image in the page so removing the page
   removes the image.
 
-## See Also
+## See also
 
 - `references/layer-structure.md`: segment rules and layer organization
 - [Desegmentation](https://fsd.how/docs/guides/issues/desegmented/): why
