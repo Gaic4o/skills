@@ -17,6 +17,11 @@ The FSD layers inside `src/` keep the standard shape described in
 `references/layer-structure.md`. Each section below shows only what the
 framework adds or renames around them, not the layers' own internals.
 
+The Next.js, Nuxt, and Astro sections follow the official tech guides on
+fsd.how. React Router and Vite are this skill's own additions with no
+official guide behind them. SvelteKit and Electron have official guides
+and are not covered here; read those directly.
+
 ## Next.js
 
 FSD works with both the App Router and the Pages Router. Next.js uses the
