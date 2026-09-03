@@ -1,13 +1,11 @@
 # Growth Walkthrough
 
-One small shop followed through four snapshots. Each snapshot shows the
-tree, what changed in the product, and which rule from `SKILL.md` decided
-the response. Two of the four moments create nothing, and that is the
-point: a layer is earned by a rule that needs one home, not by a count of
-how many places use something.
-
-This is not a migration. Nothing below was wrong and then fixed. Read it
-when starting a project, or when asked "should we add entities yet?"
+One small shop through four snapshots, showing which moments earn a layer
+and which do not. Read it when starting a project, or when deciding
+whether entities are needed yet. Each snapshot gives the tree, what
+changed in the product, and which rule from `SKILL.md` decided the
+response. Two of the four create nothing: a layer is earned by a rule that
+needs one home, not by a count of how many places use something.
 
 ## Snapshot 0: two pages, three layers
 
