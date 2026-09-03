@@ -95,7 +95,8 @@ app/sync/background-sync.ts                  ← Global concern
 
 ### Post-migration verification
 
-1. Run `npx steiger src`. All `insignificant-slice` warnings should be gone.
+1. Run `npx steiger src` and resolve what it reports. No entity or feature
+   should remain that only one page uses.
 2. Verify import directions. No upward or same-layer cross-imports.
 3. Check that no empty layer directories remain.
 4. Update documentation to reflect the new structure.

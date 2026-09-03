@@ -94,7 +94,7 @@ When writing new code, follow this tree:
 - Used in 2+ pages but duplication is manageable → keeping separate copies
   in each page is also valid.
 - An entity or feature used in only one page → keep it in that page
-  (Steiger: `insignificant-slice`).
+  (Steiger reports this as `insignificant-slice`).
 
 **Step 2: Is it reusable infrastructure with no business logic?**
 
