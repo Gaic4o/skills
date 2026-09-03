@@ -321,7 +321,8 @@ npx steiger src
   should be split into focused slices (e.g., split `user-management/` into
   `auth/`, `profile-edit/`, `password-reset/`).
 - **Do not create a top-level `assets/` segment.** Place static assets next
-  to the code that uses them. See `references/asset-handling.md`.
+  to the code that uses them; global stylesheets and fonts go to `app/`.
+  See `references/asset-handling.md`.
 
 ## 7. Cross-Import Resolution
 
@@ -426,33 +427,7 @@ Shared **may** contain application-aware code (route constants, API endpoints,
 branding assets, common types). It must **never** contain business logic,
 feature-specific code, or entity-specific code.
 
-## 10. Quick Reference
-
-- **Import direction**: `app → pages → widgets → features → entities → shared`
-- **Minimal FSD**: `app/` + `pages/` + `shared/`
-- **Widgets layer**: Discouraged for new adoption. Projects already using
-  widgets can keep them (see Section 1). Route new code to Pages, Features,
-  Shared, or App.
-- **Create entities when**: the same business domain model is currently
-  used across multiple pages or features, with stable boundaries.
-- **Create features when**: the same user interaction is currently used
-  across multiple pages, with stable boundaries.
-- **Breaking rules**: Only as an intentional design choice. Document the
-  reason in code (comment or ADR).
-- **Cross-import resolution (entities)**: Merge boundaries first; `@x` is a
-  necessary compromise, not recommended.
-- **Cross-import resolution (features/widgets)**: Strategy A (merge), B
-  (push to entities), C (compose from upper layer), or D (Public API).
-  The `@x` notation is for entities only.
-- **File naming**: Domain-based (`user.ts`, `order.ts`). Never technical-role
-  (`types.ts`, `utils.ts`).
-- **Asset placement**: Place next to the code that uses them; reuse goes to
-  `shared/ui/`; global stylesheets and fonts go to `app/`.
-- **Slice groups**: Optional navigation aid for large layers; group folder
-  has no segments and no public API.
-- **Processes layer**: Deprecated. See `references/migration-guide.md`.
-
-## 11. Conditional References
+## 10. Conditional References
 
 Read the following reference files **only** when the specific situation applies.
 Do **not** preload all references.
