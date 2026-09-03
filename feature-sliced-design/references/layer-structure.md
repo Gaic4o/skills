@@ -139,7 +139,8 @@ Widgets are a layer for placing reusable UI blocks. They can be composed from
 multiple UI elements into a meaningful section of a screen and then used in
 upper layers such as Pages or App.
 
-> **This guide discourages using the Widgets layer.**
+> **The official layer reference discourages using the Widgets layer**, and
+> this skill follows it.
 
 Widgets may seem useful for representing independent UI blocks. However, in
 real frontend code, UI blocks often include logic required for user flows,

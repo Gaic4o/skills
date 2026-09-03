@@ -47,12 +47,13 @@ entities/  → Reusable business domain models (only when used in 2+ places)
 shared/    → Infrastructure with no business logic (UI kit, utils, API client)
 ```
 
-**This guide discourages using the Widgets layer.** Widgets may seem useful
-for representing independent UI blocks. However, in real frontend code, UI
-blocks often include logic required for user flows, such as data fetching,
-state management, and event handling. In this case, the responsibilities of
-Features, which handle user flows, and Widgets, which handle UI blocks, can
-overlap, making the boundary between the two layers unclear.
+**The official layer reference discourages using the Widgets layer**, and
+this skill follows it. Widgets may seem useful for representing independent
+UI blocks. However, in real frontend code, UI blocks often include logic
+required for user flows, such as data fetching, state management, and event
+handling. In this case, the responsibilities of Features, which handle user
+flows, and Widgets, which handle UI blocks, can overlap, making the boundary
+between the two layers unclear.
 
 Not creating a widget does not mean simply moving that UI block to another
 layer. Compositions that are specific to a particular screen should stay in
