@@ -390,9 +390,14 @@ const todoSlice = createSlice({
 });
 
 export const { setCompleted } = todoSlice.actions;
-export const selectTodos = (state: RootState) => state.todos.items;
+export const selectTodos = (state: { todos: TodoState }) => state.todos.items;
 export const todoReducer = todoSlice.reducer;
 ```
+
+The selector takes only the state it reads, not `RootState`. `RootState` is
+declared in `app/`, so an entity importing it would depend on a higher layer
+(Rule 4-1). The trade-off is that the selector no longer type-checks against
+the whole store. Type it at the `app/` layer when you need that guarantee.
 
 The slice's public API re-exports what consumers need:
 
