@@ -12,9 +12,8 @@ description: >
   should remain local or be extracted, migrating from FSD v2.0 or a non-FSD
   codebase, integrating FSD with frameworks (Next.js App Router and Pages
   Router, React Router, Nuxt, Vite, Astro), or implementing common patterns
-  such as
-  authentication, API handling, Redux, and TanStack Query (React Query)
-  within FSD.
+  such as authentication, API handling, Redux, and TanStack Query
+  (React Query) within FSD.
 ---
 
 # Feature-Sliced Design (FSD) v2.1
@@ -479,9 +478,8 @@ Do **not** preload all references.
 
 - **When integrating FSD with a specific framework** (Next.js with App Router
   or Pages Router, React Router, Nuxt, Vite, Astro) for wiring routes to
-  FSD pages,
-  placing middleware/instrumentation files, structuring API route handlers,
-  or configuring path aliases:
+  FSD pages, placing middleware/instrumentation files, structuring API
+  route handlers, or configuring path aliases:
   → Read `references/framework-integration.md`
 
 - **When implementing authentication, type definitions, or API request
