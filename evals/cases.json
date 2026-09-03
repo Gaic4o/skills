@@ -97,6 +97,38 @@
       "why": "Reuse alone did not open entities; a rule that must agree with itself does. Also checks that the DTO does not follow the rule into the entity.",
       "source": "feature-sliced-design/references/growth-walkthrough.md",
       "rule": "Snapshot 2"
+    },
+    {
+      "id": "app-header-placement",
+      "prompt": "New project. Where does the app-wide header with navigation and the user menu go?",
+      "expect": "app/, as an application-level layout. Not a new widgets/ slice. A section used by one page stays in that page.",
+      "why": "The header is the textbook widgets example. Placement is decided by scope, and the skill discourages opening widgets for it.",
+      "source": "feature-sliced-design/references/layer-structure.md",
+      "rule": "Where should layouts be placed?; SKILL.md Section 1 widgets callout"
+    },
+    {
+      "id": "top-level-assets-segment",
+      "prompt": "Should I create src/assets/ to hold all the images and icons?",
+      "expect": "No. Keep an asset next to the slice that uses it. App-wide icons go to shared/ui, global fonts and styles to app/, bundler-served files to public/.",
+      "why": "A type-based assets folder is the common default and the official guidance calls it not recommended.",
+      "source": "feature-sliced-design/references/asset-handling.md",
+      "rule": "Caution; Decision tree"
+    },
+    {
+      "id": "nextjs-app-layer-name",
+      "prompt": "Next.js App Router project. Where does the FSD app layer go, and what is it called?",
+      "expect": "src/_app/, with src/_pages/ for the pages layer. The Next.js app/ routing folder stays at the project root and only re-exports from FSD pages.",
+      "why": "An older pattern kept the FSD layers unprefixed under src/ and moved the routing folder instead. Both existed in the wild.",
+      "source": "feature-sliced-design/references/framework-integration.md",
+      "rule": "Next.js; Projects on the previously recommended pattern"
+    },
+    {
+      "id": "phase-out-widgets",
+      "prompt": "We have five widgets and are moving to FSD 2.1. What happens to them?",
+      "expect": "Triage each: used by one page, inline into that page; a reused user action, features; context-free UI, shared/ui; the app shell, app; a composition of features, the page or app that renders it. Do not delete the layer wholesale and do not keep it by default.",
+      "why": "Discouraged is not deprecated. Both wholesale removal and leaving everything in place are wrong, and only per-widget triage is.",
+      "source": "feature-sliced-design/references/migration-guide.md",
+      "rule": "Phasing out a small widgets layer"
     }
   ]
 }
