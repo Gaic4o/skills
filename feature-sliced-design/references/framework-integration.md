@@ -3,7 +3,7 @@
 How to set up FSD within specific frameworks. Covers directory placement,
 routing integration, and framework-specific path alias configuration.
 
-## General Principle
+## General principle
 
 Place FSD layers inside `src/` to avoid naming conflicts with framework
 directories. The FSD `app/` and `pages/` layers are **not** the same as

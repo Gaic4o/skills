@@ -4,7 +4,7 @@ Detailed folder structures, code examples, and naming conventions for each
 FSD layer. Use this reference when creating, reviewing, or reorganizing
 project structure.
 
-## App Layer
+## App layer
 
 App-wide initialization: providers, routing, global styles, entry point.
 Organized by segments only, no slices.
@@ -54,7 +54,7 @@ routing setup, global styles, error boundaries, analytics initialization.
 
 **Does not belong:** Feature-specific code, business logic, page-level UI.
 
-## Pages Layer
+## Pages layer
 
 Route-level composition. In v2.1, pages **own substantial logic**: they are
 not thin wrappers. In early project stages, most code lives here.
@@ -92,7 +92,7 @@ reusable stays here if it is simpler to keep local.
 pages with stable boundaries (extract to a lower layer when reuse is
 confirmed, not anticipated).
 
-### Page Layout Patterns
+### Page layout patterns
 
 A typical page composes features and entities from lower layers, plus its own
 local UI components:
@@ -133,7 +133,7 @@ export const AboutPage = () => (
 );
 ```
 
-## Widgets Layer (discouraged)
+## Widgets layer (discouraged)
 
 Widgets are a layer for placing reusable UI blocks. They can be composed from
 multiple UI elements into a meaningful section of a screen and then used in
@@ -247,7 +247,7 @@ route configuration.
    When there is little duplicated code and the layout is unlikely to change
    frequently there is no need to extract it into a shared module.
 
-## Features Layer
+## Features layer
 
 Independent, reusable user interactions. **Create only when used in 2+ places.**
 
@@ -301,7 +301,7 @@ export const PostCard = ({ post }) => (
 );
 ```
 
-## Entities Layer
+## Entities layer
 
 Reusable business domain models. **Create only when used in 2+ places. Starting
 without this layer is completely valid.**
@@ -326,7 +326,7 @@ entities/product/
   index.ts
 ```
 
-## Shared Layer Structure
+## Shared layer structure
 
 Infrastructure with no business logic. Organized by segments only (no slices).
 Segments may import from each other.
@@ -415,7 +415,7 @@ technical role.
 This rule applies everywhere: in `shared/`, in slices, and when designing
 new custom segments.
 
-## Naming Conventions
+## Naming conventions
 
 ### Domain-based file naming
 
@@ -457,7 +457,7 @@ export { UserAvatar } from "./ui/UserAvatar";
 export { useUser, type User } from "./model/user";
 ```
 
-## Slice Groups
+## Slice groups
 
 A **slice group** is a folder that contains related slices on the same
 layer, used purely to make the structure easier to navigate as the number
@@ -537,7 +537,7 @@ entire content.
   same group need to share code, extract it one layer down rather than
   adding a `_common/` file.
 
-## Path Aliases
+## Path aliases
 
 Configure path aliases so imports follow the `@/layer/slice` pattern:
 

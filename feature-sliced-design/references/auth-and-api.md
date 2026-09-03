@@ -232,7 +232,7 @@ taken into account.
 > are managed on the Shared layer, they can be separated into a module
 > responsible for authentication, such as `shared/auth`.
 
-## Type Definitions
+## Type definitions
 
 ### Where to define types
 
@@ -263,7 +263,7 @@ export interface ProductDTO {
 }
 ```
 
-### Example: Domain types in entities
+### Example: domain types in entities
 
 ```typescript
 // entities/product/model/product.ts: domain model layered on top
@@ -285,7 +285,7 @@ export const fromDTO = (dto: ProductDTO): Product => ({
 business logic go in `entities/`. If you only need the raw shape, do not
 create an entity just for types.
 
-## API Request Handling
+## API request handling
 
 ### Basic pattern: API calls in the consuming slice
 

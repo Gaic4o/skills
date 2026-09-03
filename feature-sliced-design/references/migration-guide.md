@@ -125,7 +125,7 @@ Migrate one widget per commit, updating its imports as you go. Delete the
 A half-empty widgets layer is fine in the meantime; import rules keep
 working throughout.
 
-## Part 2: Custom architecture → FSD
+## Part 2: custom architecture → FSD
 
 This part follows the official `from-custom` migration order. The core
 philosophy is **pages first**: start by dividing the code by pages, then

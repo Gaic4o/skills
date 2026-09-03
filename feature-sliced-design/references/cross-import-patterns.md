@@ -99,7 +99,7 @@ project context. Cross-imports here are not always forbidden; they are
 dependencies that should be deliberate. The four strategies below are
 listed in preferred order, but each fits different situations.
 
-### Strategy A: Slice merge
+### Strategy A: slice merge
 
 If two slices are not truly independent and always change together, merge
 them into a single larger slice.
@@ -124,7 +124,7 @@ If two slices keep cross-importing each other and effectively move as one
 unit, they are likely one feature in practice. Merging is often the simpler
 and cleaner choice.
 
-### Strategy B: Push shared domain flows down into entities
+### Strategy B: push shared domain flows down into entities
 
 If multiple features share a domain-level flow, move that flow into a domain
 slice inside `entities`. Key principles:
@@ -156,7 +156,7 @@ features/
     index.ts
 ```
 
-### Strategy C: Compose from an upper layer (IoC)
+### Strategy C: compose from an upper layer (IoC)
 
 Embedding pages, features, and entities into each other is possible, but the
 composition must happen in a higher layer. For example, a page can import
@@ -263,7 +263,7 @@ cross-imports:
 </template>
 ```
 
-### Strategy D: Cross-feature reuse only via Public API
+### Strategy D: cross-feature reuse only via Public API
 
 If strategies A through C do not fit and cross-feature reuse is
 genuinely unavoidable, allow it only through an explicit Public API

@@ -21,7 +21,7 @@ description: >
 > **Source**: [fsd.how](https://fsd.how) | Strictness can be adjusted based on
 > project scale and team context.
 
-## 1. Core Philosophy & Layer Overview
+## 1. Core philosophy & layer overview
 
 FSD v2.1 core principle: **"Start simple, extract when needed."**
 
@@ -85,7 +85,7 @@ import { likePost } from "@/features/like-post"; // features → features
 **Note**: The `processes/` layer is **deprecated** in v2.1. For migration
 details, read `references/migration-guide.md`.
 
-## 2. Decision Framework
+## 2. Decision framework
 
 When writing new code, follow this tree:
 
@@ -133,7 +133,7 @@ with stable boundaries?**
 **Golden Rule: When in doubt, keep it in `pages/`. Extract only when the
 same code is actively used in multiple places and the boundary is clear.**
 
-## 3. Quick Placement Table
+## 3. Quick placement table
 
 | Scenario              | Single use                                  | Confirmed multi-use                   |
 | --------------------- | ------------------------------------------- | ------------------------------------- |
@@ -148,7 +148,7 @@ same code is actively used in multiple places and the boundary is clear.**
 | Modal content         | `pages/[page]/ui/SomeModal.tsx`             |                                       |
 | Date formatting util  |                                             | `shared/lib/format-date.ts`           |
 
-## 4. Architectural Rules (MUST)
+## 4. Architectural rules (MUST)
 
 These rules are the foundation of FSD. Violations weaken the architecture.
 If you must break a rule, ensure it is an intentional design decision and
@@ -236,7 +236,7 @@ export const calculateUserReputation = (user) => { ... };
 
 ## 5. Recommendations (SHOULD)
 
-### 5-1. Pages First: place code where it is used
+### 5-1. Pages first: place code where it is used
 
 Place code in `pages/` first. Extract to lower layers only when truly needed.
 Extraction is a design decision that affects the whole project, so the
@@ -334,7 +334,7 @@ npx steiger src
   to the code that uses them; global stylesheets and fonts go to `app/`.
   See `references/asset-handling.md`.
 
-## 7. Cross-Import Resolution
+## 7. Cross-import resolution
 
 Cross-imports are a code smell, not an absolute prohibition. The right
 strategy depends on the layer and the situation.
@@ -353,10 +353,10 @@ entity boundaries together and increases refactoring cost.
 
 In `features` and `widgets`, choose based on context:
 
-- **Strategy A: Slice merge.** Two slices always change together → merge.
-- **Strategy B: Push to entities.** Shared domain logic → move to
+- **Strategy A: slice merge.** Two slices always change together → merge.
+- **Strategy B: push to entities.** Shared domain logic → move to
   `entities/`, keep UI in the feature.
-- **Strategy C: Compose from upper layer (IoC).** The parent (pages or app)
+- **Strategy C: compose from upper layer (IoC).** The parent (pages or app)
   imports both slices and connects them via render props, slots, or DI.
 - **Strategy D: Public API access.** When reuse is genuinely unavoidable,
   allow it only through the slice's `index.ts`. Never reach into `model/`,
@@ -382,7 +382,7 @@ do not apply).
 For detailed code examples of each strategy, read
 `references/cross-import-patterns.md`.
 
-## 8. Segments & Structure Rules
+## 8. Segments & structure rules
 
 ### Standard segments
 
@@ -418,7 +418,7 @@ api/update-settings.ts   ← Settings update
 If a segment has only one domain concern, the filename may match the slice
 name (e.g., `features/auth/model/auth.ts`).
 
-## 9. Shared Layer Guide
+## 9. Shared layer guide
 
 Shared contains infrastructure with **no business logic**. It is organized by
 segments only (no slices). Segments within shared may import from each other.
@@ -437,7 +437,7 @@ Shared **may** contain application-aware code (route constants, API endpoints,
 branding assets, common types). It must **never** contain business logic,
 feature-specific code, or entity-specific code.
 
-## 10. Conditional References
+## 10. Conditional references
 
 Read the following reference files **only** when the specific situation applies.
 Do **not** preload all references.

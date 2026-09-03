@@ -5,7 +5,7 @@ FSD structure. Authentication, type, and API request patterns are in
 `references/auth-and-api.md`. Code samples are React; the placement
 rules are framework-agnostic.
 
-## State Management: Redux
+## State management: Redux
 
 ### Where a Redux slice belongs
 
@@ -111,7 +111,7 @@ The store imports each slice's reducer through its public API
 (`index.ts`), never reaching into `model/` directly (Rule 4-2). Do not
 let individual slices create their own stores.
 
-## State Management: TanStack Query (React Query)
+## State management: TanStack Query (React Query)
 
 Guidance applies to `@tanstack/react-query` v5 (formerly React Query). The
 package name is `@tanstack/react-query`.

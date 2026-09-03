@@ -8,7 +8,7 @@ case, not by type, and keep them next to the code that uses them.
 > files is **not recommended**. It violates the FSD principles of high
 > cohesion and locality of changes. Place assets where they are used.
 
-## Decision Tree
+## Decision tree
 
 1. **Used by exactly one slice?** Keep the asset inside that slice, usually
    in the `ui/` segment, or in `model/` if it is part of business logic.
@@ -20,7 +20,7 @@ case, not by type, and keep them next to the code that uses them.
    `public/` folder. The `public/` folder is not part of FSD and does not
    conflict with FSD layers.
 
-## Slice-specific Assets
+## Slice-specific assets
 
 When an asset belongs to one page, widget, or feature, keep it inside that
 slice. The asset lives next to the component that renders it:
@@ -48,7 +48,7 @@ pages/
     index.ts
 ```
 
-### Non-UI Assets
+### Non-UI assets
 
 Some assets are not part of the UI but are coupled to business logic. For
 example, a PDF template used to generate invoices. Place these in the
@@ -67,7 +67,7 @@ The principle is locality of changes: if you delete the slice, every file it
 owns goes with it. An asset that lives in business logic should sit next to
 that logic.
 
-## Shared Assets
+## Shared assets
 
 When the same asset appears across multiple slices, move it to `shared/ui/`.
 Place reusable images in a topical subfolder, or place a single asset next to
@@ -87,7 +87,7 @@ A single icon used by exactly one component in the UI kit stays next to that
 component. A library of icons or images reused across many components goes
 in a topical subfolder.
 
-## Global Assets
+## Global assets
 
 Global stylesheets and fonts belong in the `app/` layer because they are
 imported by the application entrypoint, not by individual slices:
@@ -104,7 +104,7 @@ app/
 
 Theme variables, CSS resets, and font registrations are app-wide concerns.
 
-## Public Folder
+## Public folder
 
 Most bundlers expose a `public/` folder at the project root. Files here are
 served as-is, without bundling or hashing.
@@ -130,7 +130,7 @@ src/
 Some projects keep a project-local `app/public/` folder when the bundler
 allows assets to live alongside the entrypoint. Both layouts are valid.
 
-## Summary Table
+## Summary table
 
 | Asset                                  | Location                                  |
 | -------------------------------------- | ----------------------------------------- |

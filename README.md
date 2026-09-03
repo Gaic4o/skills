@@ -8,7 +8,7 @@ Agent skills that teach AI coding agents [Feature-Sliced Design (FSD)](https://f
 npx skills add feature-sliced/skills
 ```
 
-## Available Skills
+## Available skills
 
 ### feature-sliced-design
 
@@ -45,7 +45,7 @@ These two entities need to import from each other. How do I fix this?
 Where should I put hero images for my landing page?
 ```
 
-## Skill Structure
+## Skill structure
 
 ```text
 feature-sliced-design/
