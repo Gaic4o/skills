@@ -390,7 +390,7 @@ Segment names describe **purpose**, not the kind of code they hold. This
 is the desegmentation principle:
 
 ```text
-// ❌ BAD: grouping by technical kind (what the code is)
+// BAD: grouping by technical kind (what the code is)
 shared/
   components/         ← What kind of components?
   hooks/              ← Which feature do they serve?
@@ -399,7 +399,7 @@ shared/
   helpers/            ← Same problem
   actions/            ← Redux actions for what?
 
-// ✅ GOOD: grouping by purpose (what the code is for)
+// GOOD: grouping by purpose (what the code is for)
 shared/
   ui/                 ← For displaying UI
   api/                ← For talking to the backend
@@ -423,13 +423,13 @@ Within a segment, name files after the business domain, not the technical
 role:
 
 ```text
-// ❌ Technical-role naming: mixes domains
+// BAD: technical-role naming mixes domains
 model/types.ts          ← Which types? User? Order?
 model/utils.ts
 api/endpoints.ts
 model/selectors.ts
 
-// ✅ Domain-based naming: each file owns one domain
+// GOOD: domain-based naming, each file owns one domain
 model/user.ts           ← User types + logic + store
 model/order.ts          ← Order types + logic + store
 api/fetch-profile.ts    ← Clear what this API does

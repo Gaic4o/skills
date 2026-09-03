@@ -265,13 +265,14 @@ cross-imports:
 
 ### Strategy D: Cross-feature reuse only via Public API
 
-If strategies A-C do not fit and cross-feature reuse is genuinely
-unavoidable, allow it only through an explicit Public API (exported hooks
-or UI components). Do not access another slice's `store`, `model`, or
-internal implementation.
+If strategies A through C do not fit and cross-feature reuse is
+genuinely unavoidable, allow it only through an explicit Public API
+(exported hooks or UI components). Do not access another slice's
+`store`, `model`, or internal implementation.
 
-Unlike strategies A-C which aim to eliminate cross-imports, this strategy
-accepts them while minimizing risk through strict boundaries.
+Unlike strategies A through C, which aim to eliminate cross-imports,
+this strategy accepts them while minimizing risk through strict
+boundaries.
 
 ```typescript
 // features/auth/index.ts

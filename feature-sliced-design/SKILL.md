@@ -170,7 +170,7 @@ of internal files are forbidden.
 // ✅ Correct
 import { LoginForm } from "@/features/auth";
 
-// ❌ Violation: bypasses public API
+// Violation: bypasses public API
 import { LoginForm } from "@/features/auth/ui/LoginForm";
 ```
 
@@ -319,7 +319,7 @@ npx steiger src
 - **Do not abuse `@x`.** It is a necessary compromise, not a recommended
   pattern. The notation is for the entities layer only, and only when
   boundary merge is genuinely impossible. Features and widgets handle
-  cross-imports through strategies A–D (see Section 7).
+  cross-imports through strategies A through D (see Section 7).
 - **Do not extract single-use code.** A feature or entity used by only one
   page should stay in that page.
 - **Do not use technical-role file names.** Use domain-based names
@@ -363,7 +363,7 @@ In `features` and `widgets`, choose based on context:
   `store/`, or internal files.
 
 The `@x` notation is for the entities layer only. Features and widgets use
-strategies A–D above.
+strategies A through D above.
 
 ### Strictness depends on project context
 
