@@ -266,7 +266,7 @@ export interface ProductDTO {
 
 ```typescript
 // entities/product/model/product.ts: domain model layered on top
-import type { ProductDTO } from "@/shared/api/product";
+import type { ProductDTO } from "@/shared/api";
 
 export interface Product extends ProductDTO {
   formattedPrice: string;
@@ -290,8 +290,7 @@ create an entity just for types.
 
 ```typescript
 // pages/product-detail/api/fetch-product.ts
-import { apiClient } from "@/shared/api/client";
-import type { ProductDTO } from "@/shared/api/product";
+import { apiClient, type ProductDTO } from "@/shared/api";
 
 export const fetchProduct = (id: string): Promise<ProductDTO> =>
   apiClient.get(`/products/${id}`).then((r) => r.data);
@@ -312,6 +311,10 @@ apiClient.interceptors.request.use((config) => {
   return config;
 });
 ```
+
+The `shared/api/index.ts` re-exports from these files, so consumers import
+`apiClient` and the DTO types from `@/shared/api` rather than reaching into
+`client.ts` or `product.ts` (Rule 4-2).
 
 ### CRUD helpers in shared
 
@@ -388,7 +391,7 @@ single page, keep it in that page's `model/` segment until reuse appears.
 ```typescript
 // entities/todo/model/todo.ts
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { apiClient } from "@/shared/api/client";
+import { apiClient } from "@/shared/api";
 
 interface Todo { id: string; title: string; completed: boolean }
 interface TodoState { items: Todo[]; loading: boolean }
