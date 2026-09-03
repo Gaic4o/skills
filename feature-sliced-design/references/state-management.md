@@ -200,11 +200,11 @@ export const POST_QUERIES = {
 Consume with `useQuery(POST_QUERIES.detail({ id }))`. For pagination,
 `placeholderData: prev => prev` prevents UI flicker when navigating pages.
 
-**Benefits of a query factory:** all API requests for a domain live in one
-place (readability), every key and query function is reachable through the
-same object (convenient access), and refetching is a one-line call
-(`queryClient.invalidateQueries({ queryKey: POST_QUERIES.all() })`) without
-hunting down keys across the codebase.
+**Benefits of a query factory:** all API requests for a domain live in
+one place, and every key and query function is reachable through the
+same object. Refetching becomes a one-line call
+(`queryClient.invalidateQueries({ queryKey: POST_QUERIES.all() })`)
+instead of a hunt for keys across the codebase.
 
 ### Infinite scroll
 
