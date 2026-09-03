@@ -13,6 +13,10 @@ All FSD projects follow the same `@/<layer>/*` path alias convention. The
 exact configuration differs by framework. See each framework section
 below. Astro is the one exception, using a single `@/*` alias instead.
 
+The FSD layers inside `src/` keep the standard shape described in
+`references/layer-structure.md`. Each section below shows only what the
+framework adds or renames around them, not the layers' own internals.
+
 ## Next.js
 
 FSD works with both the App Router and the Pages Router. Next.js uses the
@@ -58,21 +62,12 @@ my-nextjs-project/
         index.ts
         get-example-data.ts
     _pages/                ← FSD pages layer
-      home/
-        ui/HomePage.tsx
-        index.ts
+      home/                ← slice; segments per layer-structure.md
       profile/
-        ui/ProfilePage.tsx
-        model/profile.ts
-        api/fetch-profile.ts
-        index.ts
     widgets/               ← FSD widgets layer (when needed)
     features/              ← FSD features layer (when needed)
     entities/              ← FSD entities layer (when needed)
     shared/                ← FSD shared layer
-      ui/
-      lib/
-      api/
       db/                  ← Database queries (see below)
 ```
 
