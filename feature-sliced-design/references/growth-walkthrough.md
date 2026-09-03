@@ -162,3 +162,6 @@ says not to reach for it.
 Reuse alone opened no layer. A rule that had to agree with itself opened
 `entities`; a complete action that two pages perform opened `features`.
 Everything else stayed where it was used.
+
+Once a layer exists, `references/layer-structure.md` shows the full shape
+of its slices and segments. This file only shows the moment it appears.

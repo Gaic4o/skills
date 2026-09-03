@@ -443,16 +443,17 @@ feature-specific code, or entity-specific code.
 Read the following reference files **only** when the specific situation applies.
 Do **not** preload all references.
 
-- **When creating, reviewing, or reorganizing folder and file structure** for
-  FSD layers and slices, deciding where a page layout belongs, routing
-  widget-like code to another layer, or grouping closely related slices into
-  a parent folder for navigation (e.g., "set up project structure", "where
+- **When reviewing or reorganizing folder and file structure** that already
+  exists, deciding what goes inside a layer or slice, deciding where a page
+  layout belongs, routing widget-like code to another layer, or grouping
+  closely related slices into a parent folder for navigation (e.g., "where
   does this folder go", "how do I group these payment entities"):
   → Read `references/layer-structure.md`
 
-- **When starting a new project**, or when asked whether to add entities
-  or features yet, or to show how a structure earns each layer over time
-  rather than its finished shape:
+- **When setting up a new project from scratch** (e.g., "set up an FSD
+  project", "start a new app with FSD"), or when asked whether to add
+  entities or features yet, or to show how a structure earns each layer
+  over time rather than its finished shape:
   → Read `references/growth-walkthrough.md`
 
 - **When resolving cross-import issues** between slices on the same layer,
