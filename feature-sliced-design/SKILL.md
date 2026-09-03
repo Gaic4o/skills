@@ -98,6 +98,15 @@ When writing new code, follow this tree:
 
 **Step 2: Is it reusable infrastructure with no business logic?**
 
+The official layer reference draws the line for Shared like this: no
+business logic, but business-themed is fine (a company logo, a page
+layout), and so is UI logic (autocomplete, a search bar). Exchanging data
+with the backend and CRUD boilerplate are not business logic either.
+Business logic is a rule the product enforces on its own data, such as
+applying a discount to an order. If the code fits none of the exclusions
+and still does not clearly enforce a product rule, the term does not
+decide; go back to Step 1 and place it by where it is used.
+
 - UI components → `shared/ui/`
 - Utility functions → `shared/lib/`
 - API client, route constants → `shared/api/` or `shared/config/`
@@ -212,7 +221,7 @@ api/fetch-profile.ts    ← Clear purpose
 
 Shared contains only infrastructure: UI kit, utilities, API client setup,
 route constants, assets. Business calculations, domain rules, and workflows
-belong in `entities/` or higher layers.
+belong in `entities/` or higher layers. Section 2, Step 2 says what counts.
 
 ```typescript
 // ❌ Business logic in shared
