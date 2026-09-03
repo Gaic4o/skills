@@ -124,11 +124,11 @@
     },
     {
       "id": "phase-out-widgets",
-      "prompt": "We have five widgets and are moving to FSD 2.1. What happens to them?",
-      "expect": "Triage each: used by one page, inline into that page; a reused user action, features; context-free UI, shared/ui; the app shell, app; a composition of features, the page or app that renders it. Do not delete the layer wholesale and do not keep it by default.",
-      "why": "Discouraged is not deprecated. Both wholesale removal and leaving everything in place are wrong, and only per-widget triage is.",
+      "prompt": "Our FSD 2.0 project has a widgets layer. We are moving to 2.1. What happens to it?",
+      "expect": "Nothing has to. Widgets is discouraged for new adoption, not deprecated, so an existing layer stays valid and keeps working; only processes/ is deprecated in 2.1. If the team chooses to align, route each widget by responsibility: one-page use inlines into that page, a reused action goes to features, context-free UI to shared/ui, the app shell to app, a composition of features to the page or route layout.",
+      "why": "Discouraged is not deprecated, and the guide calls this migration optional. The reader most likely arrived from 2.0 already using widgets.",
       "source": "feature-sliced-design/references/migration-guide.md",
-      "rule": "Phasing out a small widgets layer"
+      "rule": "Phasing out a small widgets layer (optional); SKILL.md Section 1 widgets callout"
     }
   ]
 }
