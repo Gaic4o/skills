@@ -75,7 +75,11 @@ node .github/scripts/validate-skills.mjs
 It enforces the skill package rules this repository follows, based on the guidance in [vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills) `AGENTS.md`:
 
 - The `SKILL.md` body stays under 500 lines to keep the initial skill context lightweight. Frontmatter is excluded from the count.
-- Every `references/<file>.md` path mentioned in `SKILL.md` resolves to an existing file
+- The frontmatter `name` matches the skill's directory name.
+- The frontmatter has a `description`.
+- Every `references/<file>.md` path mentioned in `SKILL.md` resolves to an existing file.
+- Every file under `references/` is mentioned in `SKILL.md`, so no reference is orphaned.
+- `evals/cases.json` is valid JSON with at least one case; every case has `id`, `prompt`, `expect`, `why`, `source`, and `rule`, ids are unique, and every `source` path exists.
 
 ## References
 

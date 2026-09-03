@@ -34,6 +34,8 @@ body:
         - references/layer-structure.md
         - references/growth-walkthrough.md
         - references/cross-import-patterns.md
+        - references/excessive-entities.md
+        - references/asset-handling.md
         - references/migration-guide.md
         - references/framework-integration.md
         - references/auth-and-api.md
