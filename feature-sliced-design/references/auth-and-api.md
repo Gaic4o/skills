@@ -2,7 +2,8 @@
 
 Concrete code patterns for authentication, type definitions, and API
 request handling within FSD structure. State management patterns (Redux,
-TanStack Query) are in `references/state-management.md`.
+TanStack Query) are in `references/state-management.md`. Code samples are React; the placement
+rules are framework-agnostic.
 
 ## Authentication
 

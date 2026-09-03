@@ -2,7 +2,8 @@
 
 Concrete code patterns for Redux and TanStack Query (React Query) within
 FSD structure. Authentication, type, and API request patterns are in
-`references/auth-and-api.md`.
+`references/auth-and-api.md`. Code samples are React; the placement
+rules are framework-agnostic.
 
 ## State Management: Redux
 

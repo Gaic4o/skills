@@ -24,7 +24,7 @@ Apply FSD v2.1 principles when structuring frontend projects. The agent learns l
 - Resolving cross-import issues or evaluating the @x pattern
 - Deciding whether to create or remove an entity, or whether to skip the entities layer entirely
 - Migrating from FSD v2.0 or a non-FSD codebase
-- Integrating FSD with Next.js (App Router or Pages Router), Nuxt, Vite, or Astro
+- Integrating FSD with Next.js (App Router or Pages Router), React Router, Nuxt, Vite, or Astro
 - Implementing auth, API request handling, or state management (Redux, TanStack Query) within FSD
 
 **Examples:**
@@ -56,7 +56,7 @@ feature-sliced-design/
     cross-import-patterns.md       Cross-import resolution: 4 strategies for features/widgets, @x for entities
     excessive-entities.md          Keeping the entities layer clean: when to skip, what to extract
     migration-guide.md             v2.0→v2.1 and non-FSD migration
-    framework-integration.md       Next.js (App Router & Pages Router), Nuxt, Vite/CRA, Astro setup
+    framework-integration.md       Next.js, React Router, Nuxt, Vite, Astro setup
     auth-and-api.md                Auth, type definitions, API request handling
     state-management.md            Redux, TanStack Query (React Query)
 ```

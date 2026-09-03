@@ -332,29 +332,93 @@ export default defineConfig({
 });
 ```
 
-## Create React App (CRA)
+Create React App is no longer maintained. A project still on it follows
+this section; the only difference is that the aliases go into a `craco`
+config instead of `vite.config.ts`. Migrate to Vite when you can.
 
-CRA is no longer actively maintained. **Migrate to Vite for new projects.**
+## React Router (framework mode)
 
-If you must stay on CRA, path aliases require ejecting or using `craco` to
-override the webpack config:
+React Router v7 in framework mode owns an `app/` directory for its root
+layout, route config, and route modules. That name collides with the FSD
+app layer, so apply the same fix as for Next.js: React Router's `app/`
+stays at the project root, FSD lives in `src/`, and the FSD app layer is
+renamed to `_app/`. Only `app/` collides, so `pages/` keeps its name.
 
-```javascript
-// craco.config.js
-const path = require("path");
+Library mode (`createBrowserRouter` inside a plain Vite app) has no
+framework directory. The Vite + React section applies as is, with the
+router defined in the FSD app layer.
 
-module.exports = {
-  webpack: {
-    alias: {
-      "@/app": path.resolve(__dirname, "src/app"),
-      "@/pages": path.resolve(__dirname, "src/pages"),
-      "@/widgets": path.resolve(__dirname, "src/widgets"),
-      "@/features": path.resolve(__dirname, "src/features"),
-      "@/entities": path.resolve(__dirname, "src/entities"),
-      "@/shared": path.resolve(__dirname, "src/shared"),
-    },
-  },
-};
+### Directory structure
+
+```text
+my-router-project/
+  app/                     ← React Router (routing only)
+    root.tsx               ← Root layout, mounts providers from @/_app
+    routes.ts              ← Route config
+    routes/
+      home.tsx             ← Thin wrapper around @/pages/home
+      product.tsx
+  src/
+    _app/                  ← FSD app layer
+      providers/
+      styles/
+    pages/
+      home/
+      product/
+        ui/ProductPage.tsx
+        api/fetch-product.ts
+        index.ts
+    shared/
+  react-router.config.ts
+  vite.config.ts
+  tsconfig.json
+```
+
+### Wiring routes to FSD pages
+
+Route modules stay thin. The component, and any loader or action, come
+from the FSD page's public API.
+
+```typescript
+// app/routes.ts
+import { type RouteConfig, index, route } from "@react-router/dev/routes";
+
+export default [
+  index("routes/home.tsx"),
+  route("products/:id", "routes/product.tsx"),
+] satisfies RouteConfig;
+```
+
+```typescript
+// app/routes/product.tsx
+import type { Route } from "./+types/product";
+import { ProductPage, fetchProduct } from "@/pages/product";
+
+export const loader = ({ params }: Route.LoaderArgs) =>
+  fetchProduct(params.id);
+
+export default ProductPage;
+```
+
+A loader is a route-module export, so it has to live in the wrapper. Keep
+it to one call into the page's `api` segment or `shared/api`; data shaping
+belongs in FSD, not in the route file.
+
+### Path aliases
+
+Keep the standard `tsconfig.json` mapping, with `@/_app` pointing at
+`src/_app`, and let `vite-tsconfig-paths` feed it to the React Router
+Vite plugin:
+
+```typescript
+// vite.config.ts
+import { defineConfig } from "vite";
+import { reactRouter } from "@react-router/dev/vite";
+import tsconfigPaths from "vite-tsconfig-paths";
+
+export default defineConfig({
+  plugins: [reactRouter(), tsconfigPaths()],
+});
 ```
 
 ## Astro

@@ -11,7 +11,8 @@ description: >
   whether to use the widgets layer (discouraged), deciding whether logic
   should remain local or be extracted, migrating from FSD v2.0 or a non-FSD
   codebase, integrating FSD with frameworks (Next.js App Router and Pages
-  Router, Nuxt, Vite, Astro), or implementing common patterns such as
+  Router, React Router, Nuxt, Vite, Astro), or implementing common patterns
+  such as
   authentication, API handling, Redux, and TanStack Query (React Query)
   within FSD.
 ---
@@ -471,7 +472,8 @@ Do **not** preload all references.
   → Read `references/migration-guide.md`
 
 - **When integrating FSD with a specific framework** (Next.js with App Router
-  or Pages Router, Nuxt, Vite, CRA, Astro) for wiring routes to FSD pages,
+  or Pages Router, React Router, Nuxt, Vite, Astro) for wiring routes to
+  FSD pages,
   placing middleware/instrumentation files, structuring API route handlers,
   or configuring path aliases:
   → Read `references/framework-integration.md`
