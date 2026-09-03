@@ -302,7 +302,7 @@ export const fetchProduct = (id: string): Promise<ProductDTO> =>
 ```typescript
 // shared/api/client.ts
 import axios from "axios";
-import { getToken } from "@/shared/auth/token";
+import { getToken } from "@/shared/auth";
 
 export const apiClient = axios.create({ baseURL: import.meta.env.VITE_API_URL });
 
