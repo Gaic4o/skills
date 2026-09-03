@@ -314,7 +314,7 @@ entities/user/
   index.ts
 
 // Entity with UI (use with caution)
-// ⚠️ Adding UI to entities increases cross-import risk.
+// Caution: adding UI to entities increases cross-import risk.
 // Other entities may want to import this UI, leading to @x dependencies.
 // Entity UI should only be imported from higher layers (features, pages,
 // app), never from other entities.

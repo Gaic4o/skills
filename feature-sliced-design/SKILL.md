@@ -73,11 +73,11 @@ Cross-imports between slices on the same layer are forbidden, with one
 narrow exception in Section 7.
 
 ```typescript
-// ✅ Allowed
+// Allowed
 import { Button } from "@/shared/ui/Button"; // features → shared
 import { useUser } from "@/entities/user"; // pages → entities
 
-// ❌ Violation
+// Violation
 import { loginUser } from "@/features/auth"; // entities → features
 import { likePost } from "@/features/like-post"; // features → features
 ```
@@ -167,7 +167,7 @@ External consumers may only import from a slice's `index.ts`. Direct imports
 of internal files are forbidden.
 
 ```typescript
-// ✅ Correct
+// Correct
 import { LoginForm } from "@/features/auth";
 
 // Violation: bypasses public API
@@ -208,11 +208,11 @@ Technical-role names like `types.ts`, `utils.ts`, `helpers.ts` mix unrelated
 domains in a single file and reduce cohesion.
 
 ```text
-// ❌ Technical-role naming
+// BAD: technical-role naming
 model/types.ts          ← Which types? User? Order? Mixed?
 model/utils.ts
 
-// ✅ Domain-based naming
+// GOOD: domain-based naming
 model/user.ts           ← User types + related logic
 model/order.ts          ← Order types + related logic
 api/fetch-profile.ts    ← Clear purpose
@@ -225,11 +225,11 @@ route constants, assets. Business calculations, domain rules, and workflows
 belong in `entities/` or higher layers. Section 2, Step 2 says what counts.
 
 ```typescript
-// ❌ Business logic in shared
+// BAD: business logic in shared
 // shared/lib/userHelpers.ts
 export const calculateUserReputation = (user) => { ... };
 
-// ✅ Move to the owning domain
+// GOOD: move to the owning domain
 // entities/user/lib/reputation.ts
 export const calculateUserReputation = (user) => { ... };
 ```
@@ -278,7 +278,7 @@ it entirely, how to isolate business contexts, why CRUD belongs in
 ### 5-3. Start with minimal layers
 
 ```text
-// ✅ Valid minimal FSD project
+// Valid minimal FSD project
 src/
   app/         ← Providers, routing
   pages/       ← All page-level code
