@@ -167,6 +167,14 @@ segment (`shared/ui/index.ts`, `shared/api/index.ts`, etc.) rather than
 one top-level `shared/index.ts`. This keeps imports from Shared
 organized by intent.
 
+`shared/ui` and `shared/lib` are collections of unrelated modules, so a
+single index there can bloat bundles and defeat tree-shaking, and a large
+number of index files slows the dev server. When that happens, give each
+component or library its own index instead (`shared/ui/Button/index.ts`,
+imported as `@/shared/ui/Button`). That folder is then the boundary.
+Reaching past it into internals (`@/shared/ui/Button/Button.tsx`) is
+still a violation. See `references/layer-structure.md` for the shape.
+
 ### Environment-specific public APIs
 
 A slice should normally expose its public API through a single `index.ts`.
