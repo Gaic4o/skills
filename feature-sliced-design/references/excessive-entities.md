@@ -115,23 +115,12 @@ session DTOs. They are specific to authentication, rarely reused outside
 it, and wrapping a login response in a `user` entity tends to pull the
 entity into `@x` chains. A `user` entity is the right call only when the
 project already has an entities layer and profile data is genuinely reused
-for non-auth purposes.
+for non-auth purposes (avatars in comments, names in posts). Until then
+the entity is premature.
 
-The full comparison, both folder shapes, and the three ways to expose the
-token to the API client are in `references/auth-and-api.md`.
-
-### Decision summary
-
-| Project state | Recommended location |
-| --- | --- |
-| No entities layer (yet), simple token + minimal user info | `shared/auth` |
-| Entities layer exists, auth and profile tightly coupled | `entities/user` |
-| Complex token logic, no profile reuse yet | `shared/auth` (split from `shared/api`) |
-| Token storage in a single page, widget, or feature slice | Avoid; promote to Shared or Entities |
-
-A `user` entity created **only** to wrap a login response is premature.
-Wait until profile data is consumed for non-auth purposes (avatars in
-comments, names in posts) before introducing the entity.
+Both folder shapes, when to split `shared/auth` from `shared/api`, and the
+three ways to expose the token to the API client are in
+`references/auth-and-api.md`.
 
 ### 5. Minimize cross-imports
 

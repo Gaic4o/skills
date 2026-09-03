@@ -31,6 +31,13 @@ export const useSession = (): Session | null => { /* ... */ };
 The `shared/auth/index.ts` re-exports from these files following the
 standard public API pattern.
 
+Which of the two: the token can sit in `shared/api` next to the client,
+where every request function can reach it directly. When token management
+grows past that (refresh, expiry, invalidation), the official Auth guide
+separates the responsibilities: requests and the API client stay in
+`shared/api`, and the token store with its management logic moves to
+`shared/auth`.
+
 ### Auth UI: pages (single use) or features (multi-use)
 
 Place the login form in the slice that consumes it. Single-use (only on the
@@ -126,7 +133,7 @@ manually, expose it through a context with the key kept in `shared/api`,
 or inject the token into the API client when the entity store updates.
 
 A `user` entity created **only** to wrap a login response is premature.
-See `references/excessive-entities.md` for the full decision matrix.
+`references/excessive-entities.md` explains what that costs.
 
 ### In Pages/Widgets (not recommended)
 
