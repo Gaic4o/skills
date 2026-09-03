@@ -332,17 +332,44 @@ export const createCrudApi = <T>(resource: string) => ({
 
 ### Request placement rule
 
-Place each request function in the slice that owns the use case:
+Two questions decide where a request function goes. Ask them in order.
 
-- **Page-specific data fetching** (e.g., dashboard stats only used on the
-  dashboard) → `pages/<name>/api/`
-- **Feature-specific actions** (e.g., `toggleLike`) → `features/<name>/api/`
-- **Reusable domain queries** (e.g., `getUserById`) → `entities/<name>/api/`
-- **CRUD primitives** for a generic resource → `shared/api/create-crud-api.ts`
+**Question 1: how many slices consume it today?**
 
-Do not put domain-specific request functions in `shared/api/`. Shared is
-infrastructure; the moment a function knows about a specific resource and
-its domain rules, it belongs in `entities/` or higher.
+One consumer means the request stays with that consumer. This is the
+pages-first rule applied to `api/` segments.
+
+- Data fetching for a single page (e.g., dashboard stats) →
+  `pages/<name>/api/`
+- An action owned by a single feature (e.g., `toggleLike`) →
+  `features/<name>/api/`
+
+Two or more consumers: continue to question 2.
+
+**Question 2: does the request carry domain rules?**
+
+Domain rules are permission checks, status transitions, derived
+calculations, or a model the frontend composes from several responses.
+Knowing a resource's URL and response shape is not a domain rule.
+
+- No domain rules → `shared/api/`. Plain resource access is
+  infrastructure no matter how many slices call it. Generic CRUD belongs
+  here; build it from `shared/api/create-crud-api.ts`.
+- Domain rules → `entities/<name>/api/`, once the boundary is stable.
+
+A `getUserById` that only wraps `GET /users/:id` stays in `shared/api/`
+even when every page calls it. A `getUserById` that resolves the caller's
+permissions before returning belongs in `entities/user/api/`.
+
+> **Where this comes from.** The official API requests guide defaults
+> request functions to `shared/api` or the consuming slice's `api`
+> segment, and warns against placing API calls in `entities` prematurely.
+> Question 2 follows that advice. Existing code placed under an earlier
+> reading is still not a violation: a request function already sitting in
+> `entities/<name>/api/` without domain rules keeps working. Relocate it
+> when you are already changing that slice, or when the entity has no
+> other reason to exist. Do not sweep a repository to move these
+> functions.
 
 ## State Management: Redux
 

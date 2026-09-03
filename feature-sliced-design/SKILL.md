@@ -128,7 +128,7 @@ same code is actively used in multiple places and the boundary is clear.**
 | --------------------- | ------------------------------------------- | ------------------------------------- |
 | User profile form     | `pages/profile/ui/ProfileForm.tsx`          | `features/profile-form/`              |
 | Product card          | `pages/products/ui/ProductCard.tsx`         | `entities/product/ui/ProductCard.tsx` |
-| Product data fetching | `pages/product-detail/api/fetch-product.ts` | `entities/product/api/`               |
+| Product data fetching | `pages/product-detail/api/fetch-product.ts` | `shared/api/` (no domain rules)       |
 | Auth token/session    | `shared/auth/` (always)                     | `shared/auth/` (always)               |
 | Auth login form       | `pages/login/ui/LoginForm.tsx`              | `features/auth/`                      |
 | CRUD operations       | `shared/api/` (always)                      | `shared/api/` (always)                |
