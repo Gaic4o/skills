@@ -302,9 +302,6 @@ npx steiger src
 
 ## 6. Anti-patterns (AVOID)
 
-- **Do not adopt the `widgets/` layer by default.** UI blocks often include
-  user-flow logic, making the boundary with Features unclear (see Section 1
-  for where widget-like code goes instead).
 - **Do not create entities prematurely.** Data structures used in only one
   place belong in that place.
 - **Do not put CRUD in entities.** Use `shared/api/`. Consider entities only
