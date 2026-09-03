@@ -36,6 +36,40 @@ function readLines(filePath) {
   return lines;
 }
 
+function readFrontmatterField(lines, bodyStart, field) {
+  // Scalar (`name: value`) or folded block (`description: >`) form.
+  const pattern = new RegExp(`^${field}:\\s*(.*)$`);
+
+  for (let index = 1; index < bodyStart - 1; index += 1) {
+    const match = lines[index].match(pattern);
+
+    if (match === null) {
+      continue;
+    }
+
+    const inline = match[1].trim();
+
+    if (inline !== "" && inline !== ">" && inline !== "|") {
+      return inline;
+    }
+
+    // Folded or literal block: collect the indented lines beneath it.
+    const block = [];
+
+    for (let next = index + 1; next < bodyStart - 1; next += 1) {
+      if (!/^\s+\S/.test(lines[next])) {
+        break;
+      }
+
+      block.push(lines[next].trim());
+    }
+
+    return block.join(" ").trim();
+  }
+
+  return null;
+}
+
 function findBodyStart(filePath, lines) {
   if (lines[0] !== "---") {
     recordError(filePath, "SKILL.md is missing its frontmatter block", 1);
@@ -119,9 +153,39 @@ function validateSkill(skillDirectory) {
     );
   }
 
+  if (bodyStart !== null) {
+    // The installed skill is addressed by its directory name, so a
+    // frontmatter name that disagrees with it routes to nothing.
+    const declaredName = readFrontmatterField(lines, bodyStart, "name");
+    const directoryName = path.basename(skillDirectory);
+
+    if (declaredName === null) {
+      recordError(skillFile, "frontmatter is missing a name field", 1);
+    } else if (declaredName !== directoryName) {
+      recordError(
+        skillFile,
+        `frontmatter name "${declaredName}" does not match the ` +
+          `directory name "${directoryName}"`,
+        1,
+      );
+    }
+
+    // The description is the only text an agent reads when deciding
+    // whether to activate the skill.
+    const description = readFrontmatterField(lines, bodyStart, "description");
+
+    if (description === null || description === "") {
+      recordError(skillFile, "frontmatter is missing a description", 1);
+    }
+  }
+
+  const mentionedReferences = new Set();
+
   for (const [index, line] of lines.entries()) {
     for (const match of line.matchAll(REFERENCE_PATH_PATTERN)) {
       const referenceName = match[1];
+      mentionedReferences.add(referenceName);
+
       const referenceFile = path.join(
         skillDirectory,
         "references",
@@ -133,6 +197,21 @@ function validateSkill(skillDirectory) {
           skillFile,
           `references/${referenceName} does not exist`,
           index + 1,
+        );
+      }
+    }
+  }
+
+  // A reference SKILL.md never names is dead weight: it ships with the
+  // package but no routing rule can reach it.
+  const referencesDirectory = path.join(skillDirectory, "references");
+
+  if (statSync(referencesDirectory, { throwIfNoEntry: false })?.isDirectory()) {
+    for (const entry of readdirSync(referencesDirectory)) {
+      if (entry.endsWith(".md") && !mentionedReferences.has(entry)) {
+        recordError(
+          path.join(referencesDirectory, entry),
+          `references/${entry} is never mentioned in SKILL.md`,
         );
       }
     }
