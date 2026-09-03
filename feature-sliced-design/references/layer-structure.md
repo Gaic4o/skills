@@ -140,21 +140,8 @@ multiple UI elements into a meaningful section of a screen and then used in
 upper layers such as Pages or App.
 
 > **The official layer reference discourages using the Widgets layer**, and
-> this skill follows it.
-
-Widgets may seem useful for representing independent UI blocks. However, in
-real frontend code, UI blocks often include logic required for user flows,
-such as data fetching, state management, and event handling. In this case,
-the responsibilities of Features, which handle user flows, and Widgets, which
-handle UI blocks, can overlap, making the boundary between the two layers
-unclear.
-
-Not creating a widget does not mean simply moving that UI block to another
-layer. Compositions that are specific to a particular screen should stay in
-`pages`. When a user action is reused across multiple pages, both the action
-and the UI composition required to perform it should be extracted into
-`features`. Shared UI without business context should be separated into
-`shared`. UI such as app-wide layouts can be handled in `app`.
+> this skill follows it. The reasoning, and where each kind of UI block
+> goes instead, is in `SKILL.md`, Section 1.
 
 One edge case: multiple flows from the Features layer may need to be composed
 together, the kind of case that previously would have been placed in Widgets.
