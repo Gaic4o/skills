@@ -226,62 +226,59 @@ Split only when this boundary is required. Put server-only exports in
 
 ## Nuxt 3
 
+Nuxt keeps file routing in `pages/` at the project root, the name FSD
+reserves for the pages layer. The official Nuxt guide resolves this by
+moving Nuxt's routing folder inside the FSD `app` layer and giving `src/`
+a single `@` alias. This section mirrors that guide.
+
 ### Directory structure
 
 ```text
 my-nuxt-project/
-  pages/                   ← Nuxt file-based routing
-    index.vue              ← Route entry, imports from FSD pages layer
-    profile.vue
+  nuxt.config.ts
   src/
     app/                   ← FSD app layer
-      providers/
+      routes/              ← Nuxt file routing (dir.pages)
+        index.vue
+      layouts/             ← Nuxt layouts (dir.layouts)
     pages/                 ← FSD pages layer
       home/
-        ui/HomePage.vue
+        ui/home-page.vue
         index.ts
-      profile/
-        ui/ProfilePage.vue
-        model/profile.ts
-        index.ts
-    shared/                ← FSD shared layer
-      ui/
-      lib/
-      api/
+    shared/
+```
+
+### nuxt.config.ts
+
+```typescript
+// nuxt.config.ts
+export default defineNuxtConfig({
+  alias: {
+    "@": "../src",
+  },
+  dir: {
+    pages: "./src/app/routes",
+    layouts: "./src/app/layouts",
+  },
+});
 ```
 
 ### Wiring Nuxt routes to FSD pages
 
 ```vue
-<!-- pages/index.vue: thin route entry -->
-<template>
-  <HomePage />
-</template>
+<!-- src/app/routes/index.vue -->
 <script setup>
 import { HomePage } from "@/pages/home";
 </script>
+
+<template>
+  <HomePage />
+</template>
 ```
 
-### Path aliases
-
-In addition to the standard `tsconfig.json` mapping, Nuxt requires explicit
-runtime aliases in `nuxt.config.ts`:
-
-```typescript
-// nuxt.config.ts
-import { resolve } from "path";
-
-export default defineNuxtConfig({
-  alias: {
-    "@/app": resolve(__dirname, "src/app"),
-    "@/pages": resolve(__dirname, "src/pages"),
-    "@/widgets": resolve(__dirname, "src/widgets"),
-    "@/features": resolve(__dirname, "src/features"),
-    "@/entities": resolve(__dirname, "src/entities"),
-    "@/shared": resolve(__dirname, "src/shared"),
-  },
-});
-```
+The official guide also shows config-based routing through
+`app/router.options.ts` instead of file routing. Either way, route
+definitions live in the `app` layer and page slices in `pages`.
 
 ## Vite + React
 
