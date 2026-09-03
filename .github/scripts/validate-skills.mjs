@@ -218,6 +218,64 @@ function validateSkill(skillDirectory) {
   }
 }
 
+function validateEvals() {
+  const evalsFile = path.join(ROOT, "evals", "cases.json");
+
+  if (!isFile(evalsFile)) {
+    return;
+  }
+
+  let parsed;
+
+  try {
+    parsed = JSON.parse(readFileSync(evalsFile, "utf8"));
+  } catch (error) {
+    recordError(evalsFile, `is not valid JSON: ${error.message}`);
+    return;
+  }
+
+  const cases = parsed.cases;
+
+  if (!Array.isArray(cases) || cases.length === 0) {
+    recordError(evalsFile, "must contain a non-empty cases array");
+    return;
+  }
+
+  console.log(`  evals/cases.json: ${cases.length} case(s)`);
+
+  const required = ["id", "prompt", "expect", "why", "source", "rule"];
+  const seen = new Set();
+
+  for (const [index, testCase] of cases.entries()) {
+    const label = testCase?.id ?? `#${index + 1}`;
+
+    for (const field of required) {
+      if (typeof testCase?.[field] !== "string" || testCase[field] === "") {
+        recordError(evalsFile, `case ${label} is missing "${field}"`);
+      }
+    }
+
+    if (typeof testCase?.id === "string") {
+      if (seen.has(testCase.id)) {
+        recordError(evalsFile, `case id "${testCase.id}" is duplicated`);
+      }
+
+      seen.add(testCase.id);
+    }
+
+    // A case that cites a file which no longer exists silently stops
+    // guarding anything, so treat the dangling path as an error.
+    if (typeof testCase?.source === "string" && testCase.source !== "") {
+      if (!isFile(path.join(ROOT, testCase.source))) {
+        recordError(
+          evalsFile,
+          `case ${label} cites "${testCase.source}", which does not exist`,
+        );
+      }
+    }
+  }
+}
+
 function main() {
   const skillDirectories = findSkillDirectories();
 
@@ -232,6 +290,8 @@ function main() {
   for (const skillDirectory of skillDirectories) {
     validateSkill(skillDirectory);
   }
+
+  validateEvals();
 
   if (errorCount > 0) {
     console.error(`\n${errorCount} problem(s) found.`);

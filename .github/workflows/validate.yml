@@ -5,6 +5,7 @@ on:
     paths:
       - "**/SKILL.md"
       - "**/references/**"
+      - "evals/**"
       - ".github/scripts/validate-skills.mjs"
       - ".github/workflows/validate.yml"
   push:
@@ -12,6 +13,7 @@ on:
     paths:
       - "**/SKILL.md"
       - "**/references/**"
+      - "evals/**"
       - ".github/scripts/validate-skills.mjs"
       - ".github/workflows/validate.yml"
 

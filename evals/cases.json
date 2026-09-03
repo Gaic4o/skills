@@ -1,0 +1,86 @@
+{
+  "$comment": "Placement cases for the feature-sliced-design skill. See README.md in this directory for how to run them. Every `source` path is checked by .github/scripts/validate-skills.mjs.",
+  "skill": "feature-sliced-design",
+  "cases": [
+    {
+      "id": "auth-token",
+      "prompt": "Where do I put the auth token and session helpers?",
+      "expect": "shared/auth/ (or shared/api/). Not a user entity.",
+      "why": "Tokens and session DTOs are infrastructure, not a domain model, and are rarely reused outside authentication.",
+      "source": "feature-sliced-design/SKILL.md",
+      "rule": "Section 2, Step 2; Section 6 anti-pattern on the user entity"
+    },
+    {
+      "id": "small-project-entities",
+      "prompt": "I am starting a project with two pages. Should I create the entities and features layers now?",
+      "expect": "No. app/ + pages/ + shared/ is valid FSD. Add layers when reuse is real.",
+      "why": "This is the single most reported community complaint: small projects split into every layer up front.",
+      "source": "feature-sliced-design/SKILL.md",
+      "rule": "Section 5-2 'Start without entities'; Section 5-3"
+    },
+    {
+      "id": "plain-reusable-request",
+      "prompt": "getUserById just wraps GET /users/:id and every page calls it. Does it belong in entities/user/api/?",
+      "expect": "No. shared/api/. Reuse alone does not promote a request; domain rules do.",
+      "why": "Guards the two-question placement rule. The old bullet list sent this exact function to entities.",
+      "source": "feature-sliced-design/references/auth-and-api.md",
+      "rule": "Request placement rule, Question 2"
+    },
+    {
+      "id": "single-page-request",
+      "prompt": "Dashboard stats are fetched only on the dashboard page. Where does the request go?",
+      "expect": "pages/dashboard/api/. It stays with its only consumer.",
+      "why": "Question 1 must be asked before Question 2, or pages-first breaks.",
+      "source": "feature-sliced-design/references/auth-and-api.md",
+      "rule": "Request placement rule, Question 1"
+    },
+    {
+      "id": "same-layer-import",
+      "prompt": "features/profile needs something from features/auth. Is that allowed?",
+      "expect": "Prefer strategies A to C. If truly unavoidable, only through the other slice's public API, never its internals.",
+      "why": "The MUST rule reads as an absolute ban; the documented escape hatch must stay reachable.",
+      "source": "feature-sliced-design/references/cross-import-patterns.md",
+      "rule": "Strategy D; SKILL.md Rules 4-1 and 4-3"
+    },
+    {
+      "id": "widgets-adoption",
+      "prompt": "Should I add a widgets layer to this new project?",
+      "expect": "Discouraged. Screen-specific composition stays in pages, reused actions go to features, context-free UI to shared, app-wide layout to app.",
+      "why": "Must be presented as the official position, not as this skill's preference.",
+      "source": "feature-sliced-design/SKILL.md",
+      "rule": "Section 1 widgets callout"
+    },
+    {
+      "id": "technical-file-name",
+      "prompt": "Can I keep all my entity types in model/types.ts?",
+      "expect": "No. Use domain-based names such as model/user.ts and model/order.ts.",
+      "why": "Desegmentation check.",
+      "source": "feature-sliced-design/SKILL.md",
+      "rule": "Rule 4-4"
+    },
+    {
+      "id": "shared-ui-import",
+      "prompt": "How do I import the Button from the shared UI kit?",
+      "expect": "@/shared/ui/Button, the component folder's own index. Not @/shared/ui/Button/Button.tsx.",
+      "why": "Per-component public APIs in shared/ui and shared/lib are permitted; reaching past the index is not.",
+      "source": "feature-sliced-design/SKILL.md",
+      "rule": "Rule 4-2"
+    },
+    {
+      "id": "business-logic-in-shared",
+      "prompt": "Is shared/lib/user-helpers.ts with calculateUserReputation acceptable?",
+      "expect": "No. A product rule computed over domain data belongs in entities/user/lib/ or higher.",
+      "why": "The positive half of the business-logic test.",
+      "source": "feature-sliced-design/SKILL.md",
+      "rule": "Rule 4-5"
+    },
+    {
+      "id": "business-themed-in-shared",
+      "prompt": "Can the company logo component and an autocomplete input live in shared/ui?",
+      "expect": "Yes. Business-themed code and UI logic are both allowed in shared; only business logic is excluded.",
+      "why": "The negative half of the same test. An agent that over-applies Rule 4-5 fails this one.",
+      "source": "feature-sliced-design/SKILL.md",
+      "rule": "Section 2, Step 2"
+    }
+  ]
+}
