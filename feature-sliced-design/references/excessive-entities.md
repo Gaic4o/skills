@@ -110,71 +110,15 @@ layer may be appropriate. If not, keep it in `shared/api`.
 
 ### 4. Store authentication data in shared
 
-Prefer `shared` over creating a `user` entity for auth tokens and session
-DTOs. These are context-specific to authentication and unlikely to be
-reused outside that scope. Wrapping a login response in a `user` entity
-also tends to drag entities into cross-layer imports or `@x` chains,
-complicating the architecture.
+Prefer `shared/auth` (or `shared/api`) over a `user` entity for tokens and
+session DTOs. They are specific to authentication, rarely reused outside
+it, and wrapping a login response in a `user` entity tends to pull the
+entity into `@x` chains. A `user` entity is the right call only when the
+project already has an entities layer and profile data is genuinely reused
+for non-auth purposes.
 
-The Auth guide also documents **In Entities** (a `user` entity) as a
-valid placement when the project already has an entities layer and the
-data is genuinely reused. **In Pages/Widgets** is not recommended.
-
-**`shared/auth` (or `shared/api`) is the recommended default.** Choose
-it when:
-
-- The project has no entities layer yet
-- Auth state is just a token plus minimal user info (id, email, role)
-- Token management logic (refresh, expiration) is the main concern, not
-  user profile data
-
-```text
-shared/
-  auth/
-    use-auth.ts         ← Token + minimal user info
-    index.ts
-  api/
-    client.ts           ← API client reads token from shared/auth
-    endpoints/
-      order.ts
-    index.ts
-```
-
-This approach pairs naturally with an API client middleware that injects
-the token into authenticated requests.
-
-**A `user` entity is the right call when:**
-
-- The project already has an entities layer
-- Auth and profile data are tightly coupled (current user info is reused
-  across pages for non-auth purposes like comments, posts, mentions)
-- Token management has complex business logic (invalidation policies,
-  multi-device session tracking) that benefits from co-location with the
-  user model
-
-```text
-entities/
-  user/
-    model/
-      current-user.ts   ← Token + full user model + business logic
-      user.ts           ← Generic user type, used for other users too
-    api/
-      get-current-user.ts
-    index.ts
-```
-
-When using the entity approach, the API client (in `shared/api`) needs
-access to the token without violating the import rule. The official Auth
-guide describes three solutions: pass the token manually on each request,
-expose it through a context or `localStorage` with the key kept in
-`shared/api`, or inject the token into the API client whenever the entity
-store updates.
-
-**Pages and a specific feature slice are not recommended.** Tokens are
-application-wide state: a token store inside `features/login` cannot be
-imported by other features, and one inside a page is unreachable from lower
-layers. See the auth section of `references/auth-and-api.md` for the
-full explanation.
+The full comparison, both folder shapes, and the three ways to expose the
+token to the API client are in `references/auth-and-api.md`.
 
 ### Decision summary
 

@@ -463,8 +463,8 @@ Do **not** preload all references.
 
 - **When deciding whether to create or remove an entity**, dealing with too
   many entities, evaluating whether to skip the entities layer entirely,
-  placing CRUD operations, deciding where authentication data belongs, or
-  isolating business contexts to avoid `@x` chains:
+  placing CRUD operations, or isolating business contexts to avoid `@x`
+  chains:
   → Read `references/excessive-entities.md`
 
 - **When deciding where to place static assets** (images, icons, fonts,
