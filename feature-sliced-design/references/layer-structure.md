@@ -426,7 +426,7 @@ role:
 // BAD: technical-role naming mixes domains
 model/types.ts          ← Which types? User? Order?
 model/utils.ts
-api/endpoints.ts
+api/endpoints.ts        ← Every domain's requests in one file
 model/selectors.ts
 
 // GOOD: domain-based naming, each file owns one domain
@@ -435,6 +435,10 @@ model/order.ts          ← Order types + logic + store
 api/fetch-profile.ts    ← Clear what this API does
 model/todo.ts           ← Redux slice + selectors + thunks
 ```
+
+The fault in `api/endpoints.ts` is the single file, not the word. An
+`endpoints/` directory holding one file per domain is the shape the
+official API requests guide uses.
 
 ### Single-concern segments
 
