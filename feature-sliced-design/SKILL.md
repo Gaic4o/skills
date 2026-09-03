@@ -68,7 +68,8 @@ can keep using them as before.
 See `references/layer-structure.md` for details and layout placement.
 
 **Import rule**: A module may only import from layers strictly below it.
-Cross-imports between slices on the same layer are forbidden.
+Cross-imports between slices on the same layer are forbidden, with one
+narrow exception in Section 7.
 
 ```typescript
 // ✅ Allowed
@@ -146,8 +147,9 @@ document the reason in code (a comment or ADR).
 ### 4-1. Import only from lower layers
 
 `app → pages → widgets → features → entities → shared`.
-Upward imports and cross-imports between slices on the same layer are
-forbidden.
+Upward imports are forbidden. So are cross-imports between slices on the
+same layer, except through the other slice's public API as a last resort
+(Section 7, Strategy D).
 
 ### 4-2. Public API: every slice exports through index.ts
 
@@ -187,7 +189,7 @@ environment-specific entry point such as `index.server.ts`. See
 ### 4-3. No cross-imports between slices on the same layer
 
 If two slices on the same layer need to share logic, follow the resolution
-order in Section 7. Do not create direct imports.
+order in Section 7. Never reach into another slice's internals.
 
 ### 4-4. Domain-based file naming (no desegmentation)
 
