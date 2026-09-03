@@ -186,14 +186,10 @@ imported as `@/shared/ui/Button`). That folder is then the boundary.
 Reaching past it into internals (`@/shared/ui/Button/Button.tsx`) is
 still a violation. See `references/layer-structure.md` for the shape.
 
-### Environment-specific public APIs
-
-A slice should normally expose its public API through a single `index.ts`.
-Ad-hoc customization is not recommended.
-
-If a single `index.ts` cannot preserve a runtime boundary, add an
-environment-specific entry point such as `index.server.ts`. See
-`references/framework-integration.md`.
+**Environment-specific entry points:** a slice normally exposes one
+`index.ts`, and ad-hoc variations are not recommended. If a single index
+cannot preserve a runtime boundary, add an entry point such as
+`index.server.ts`. See `references/framework-integration.md`.
 
 ### 4-3. No cross-imports between slices on the same layer
 
