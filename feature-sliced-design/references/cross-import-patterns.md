@@ -180,6 +180,7 @@ Common Inversion of Control techniques:
 ```typescript
 // features/user-profile/index.ts
 export { UserProfilePanel } from "./ui/UserProfilePanel";
+export { UserAvatar } from "./ui/UserAvatar";
 
 // features/activity-feed/index.ts
 export { ActivityFeed } from "./ui/ActivityFeed";
@@ -244,6 +245,10 @@ cross-imports:
 
 ```vue
 <!-- features/comment-list/ui/CommentList.vue -->
+<script setup lang="ts">
+defineProps<{ comments: Comment[] }>();
+</script>
+
 <template>
   <ul>
     <li v-for="comment in comments" :key="comment.id">
@@ -254,6 +259,11 @@ cross-imports:
 </template>
 
 <!-- pages/PostPage.vue -->
+<script setup lang="ts">
+import { CommentList } from "@/features/comment-list";
+import { UserAvatar } from "@/features/user-profile";
+</script>
+
 <template>
   <CommentList :comments="comments">
     <template #avatar="{ userId }">
