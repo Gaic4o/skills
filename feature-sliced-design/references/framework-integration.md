@@ -175,7 +175,7 @@ const handler = (req: NextApiRequest, res: NextApiResponse) =>
 
 export const getExampleData = { config, handler } as const;
 
-// app/api/example.ts
+// pages/api/example.ts
 import { getExampleData } from '@/_app/api-routes';
 export const config = getExampleData.config;
 export default getExampleData.handler;
@@ -446,8 +446,10 @@ my-astro-project/
 The Astro route file imports and renders the FSD page, nothing else:
 
 ```astro
+---
 // src/pages/index.astro
 import { HomePage } from '@/_pages/home';
+---
 <HomePage />
 ```
 
