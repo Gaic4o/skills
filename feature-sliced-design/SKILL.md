@@ -135,18 +135,17 @@ same code is actively used in multiple places and the boundary is clear.**
 
 ## 3. Quick placement table
 
-| Scenario              | Single use                                  | Confirmed multi-use                   |
-| --------------------- | ------------------------------------------- | ------------------------------------- |
-| User profile form     | `pages/profile/ui/ProfileForm.tsx`          | `features/profile-form/`              |
-| Product card          | `pages/products/ui/ProductCard.tsx`         | `entities/product/ui/ProductCard.tsx` |
-| Product data fetching | `pages/product-detail/api/fetch-product.ts` | `shared/api/` (no domain rules)       |
-| Auth token/session    | `shared/auth/` (always)                     | `shared/auth/` (always)               |
-| Auth login form       | `pages/login/ui/LoginForm.tsx`              | `features/auth/`                      |
-| CRUD operations       | `shared/api/` (always)                      | `shared/api/` (always)                |
-| Generic Card layout   |                                             | `shared/ui/Card/`                     |
-| Modal manager         |                                             | `shared/ui/modal-manager/`            |
-| Modal content         | `pages/[page]/ui/SomeModal.tsx`             |                                       |
-| Date formatting util  |                                             | `shared/lib/format-date.ts`           |
+| Scenario                   | Single use                                  | Confirmed multi-use                   |
+| -------------------------- | ------------------------------------------- | ------------------------------------- |
+| User profile form          | `pages/profile/ui/ProfileForm.tsx`          | `features/profile-form/`              |
+| Product card               | `pages/products/ui/ProductCard.tsx`         | `entities/product/ui/ProductCard.tsx` |
+| API request (read or CRUD) | `pages/product-detail/api/fetch-product.ts` | `shared/api/` (no domain rules)       |
+| Auth token/session         | `shared/auth/`                              | `shared/auth/`                        |
+| Auth login form            | `pages/login/ui/LoginForm.tsx`              | `features/auth/`                      |
+| Generic Card layout        |                                             | `shared/ui/Card/`                     |
+| Modal manager              |                                             | `shared/ui/modal-manager/`            |
+| Modal content              | `pages/[page]/ui/SomeModal.tsx`             |                                       |
+| Date formatting util       |                                             | `shared/lib/format-date.ts`           |
 
 ## 4. Architectural rules (MUST)
 
