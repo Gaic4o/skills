@@ -81,6 +81,22 @@
       "why": "The negative half of the same test. An agent that over-applies Rule 4-5 fails this one.",
       "source": "feature-sliced-design/SKILL.md",
       "rule": "Section 2, Step 2"
+    },
+    {
+      "id": "new-project-three-pages",
+      "prompt": "Set up an FSD structure for a shop with a home page, a product page, and a search page.",
+      "expect": "app/, pages/ with three slices, shared/. No entities or features. Product DTO and requests in shared/api.",
+      "why": "The finished-structure reflex. Fails if any layer beyond three appears unprompted.",
+      "source": "feature-sliced-design/references/growth-walkthrough.md",
+      "rule": "Snapshot 0 and Snapshot 1"
+    },
+    {
+      "id": "diverged-rule",
+      "prompt": "Two pages each compute whether a product is on sale, and one copy is now out of date. What should change?",
+      "expect": "Move the rule to entities/product/model. Leave the ProductDTO in shared/api and the badge UI in the pages.",
+      "why": "Reuse alone did not open entities; a rule that must agree with itself does. Also checks that the DTO does not follow the rule into the entity.",
+      "source": "feature-sliced-design/references/growth-walkthrough.md",
+      "rule": "Snapshot 2"
     }
   ]
 }

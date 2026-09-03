@@ -450,6 +450,11 @@ Do **not** preload all references.
   does this folder go", "how do I group these payment entities"):
   → Read `references/layer-structure.md`
 
+- **When starting a new project**, or when asked whether to add entities
+  or features yet, or to show how a structure earns each layer over time
+  rather than its finished shape:
+  → Read `references/growth-walkthrough.md`
+
 - **When resolving cross-import issues** between slices on the same layer,
   evaluating the `@x` pattern, choosing between Strategy A/B/C/D for
   features and widgets, or deciding whether boundaries should be merged:

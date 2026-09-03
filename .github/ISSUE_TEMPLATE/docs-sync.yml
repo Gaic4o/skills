@@ -32,6 +32,7 @@ body:
       options:
         - SKILL.md
         - references/layer-structure.md
+        - references/growth-walkthrough.md
         - references/cross-import-patterns.md
         - references/migration-guide.md
         - references/framework-integration.md

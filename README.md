@@ -52,6 +52,7 @@ feature-sliced-design/
   SKILL.md                         Core rules and decision framework
   references/
     layer-structure.md             Detailed folder structures per layer (incl. slice groups)
+    growth-walkthrough.md          One shop through four snapshots: which moments earn a layer
     asset-handling.md              Where to place images, icons, fonts, and other static assets
     cross-import-patterns.md       Cross-import resolution: 4 strategies for features/widgets, @x for entities
     excessive-entities.md          Keeping the entities layer clean: when to skip, what to extract
