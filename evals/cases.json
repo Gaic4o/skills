@@ -14,14 +14,14 @@
       "id": "small-project-entities",
       "prompt": "I am starting a project with two pages. Should I create the entities and features layers now?",
       "expect": "No. app/ + pages/ + shared/ is valid FSD. Add entities or features only when a shared responsibility has a stable boundary its consumers must agree on; reuse alone does not require a layer.",
-      "why": "This is the single most reported community complaint: small projects split into every layer up front.",
+      "why": "A common failure mode: small projects split into every layer up front.",
       "source": "feature-sliced-design/SKILL.md",
       "rule": "Section 5-2 'Start without entities'; Section 5-3"
     },
     {
       "id": "plain-reusable-request",
       "prompt": "getUserById just wraps GET /users/:id and every page calls it. Does it belong in entities/user/api/?",
-      "expect": "No. shared/api/. Reuse alone does not promote a request; domain rules do.",
+      "expect": "No. shared/api/. Plain resource access stays infrastructure however many consumers call it. A request moves into an entity only when an established entity boundary owns that domain responsibility.",
       "why": "Guards the two-question placement rule. The old bullet list sent this exact function to entities.",
       "source": "feature-sliced-design/references/auth-and-api.md",
       "rule": "Request placement rule, Question 2"
@@ -53,18 +53,18 @@
     {
       "id": "business-themed-in-shared",
       "prompt": "Can the company logo component and an autocomplete input live in shared/ui?",
-      "expect": "Yes. Business-themed code and UI logic are both allowed in shared; only business logic is excluded.",
+      "expect": "Yes, as long as they encode no business rules and no slice-specific behavior. Business-themed presentation and generic UI interaction logic may live in shared/ui; business logic may not.",
       "why": "Rule 4-5 is easy to over-apply. Shared excludes business logic, but business-themed code and UI logic are explicitly allowed, and an agent that flattens the rule removes both.",
       "source": "feature-sliced-design/SKILL.md",
       "rule": "Section 2, Step 2"
     },
     {
       "id": "new-project-three-pages",
-      "prompt": "Set up an FSD structure for a shop with a home page, a product page, and a search page. All three read product data from the backend.",
-      "expect": "app/, pages/ with three slices, shared/. No entities or features. Product DTO and requests in shared/api.",
+      "prompt": "Set up an FSD structure for a shop with home, product, and search pages. Home and search both call the same fetchProducts request, and every page reads the same ProductDTO.",
+      "expect": "app/, pages/ with three slices, shared/. No entities or features. ProductDTO and the shared fetchProducts go in shared/api; a request only one page calls stays in that page's api/ segment.",
       "why": "The finished-structure reflex. Fails if any layer beyond three appears unprompted.",
       "source": "feature-sliced-design/references/growth-walkthrough.md",
-      "rule": "Snapshot 0 and Snapshot 1"
+      "rule": "Snapshot 0 and Snapshot 1; auth-and-api.md request placement rule"
     },
     {
       "id": "diverged-rule",
@@ -77,7 +77,7 @@
     {
       "id": "app-header-placement",
       "prompt": "New project. Where does the app-wide header with navigation and the user menu go?",
-      "expect": "The header composition goes in app/ as an application-level layout, not a new widgets/ slice. Pieces inside it still come from lower layers: a reused action from features, domain UI from entities, context-free UI from shared. A section used by one page stays in that page.",
+      "expect": "The header composition goes in app/ as an application-level layout, not a new widgets/ slice. Its parts keep their own ownership: an already-established feature may supply a reused action, an established entity may supply domain UI, context-free UI comes from shared. A section only one page renders stays in that page.",
       "why": "The header is the textbook widgets example. Placement is decided by scope, and the skill discourages opening widgets for it.",
       "source": "feature-sliced-design/references/layer-structure.md",
       "rule": "Where should layouts be placed?; SKILL.md Section 1 widgets callout"
@@ -108,7 +108,7 @@
     },
     {
       "id": "phase-out-widget-placement",
-      "prompt": "We decided to remove our small widgets layer. We have an app shell, a section only one page renders, an action reused on several pages, and a generic UI block. Where does each go?",
+      "prompt": "We decided to remove our small widgets layer. We have an app shell, a section only one page renders, a stable user action reused on several pages that must behave the same in each, and a generic UI block. Where does each go?",
       "expect": "App shell to app; the one-page section inlines into that page; the reused action and its UI to features; the context-free UI block to shared/ui. A widget that only composes features moves up to the page or the route layout.",
       "why": "Splits the routing table off the deprecated-versus-discouraged question so a failure says which half is wrong.",
       "source": "feature-sliced-design/references/migration-guide.md",
@@ -137,6 +137,22 @@
       "why": "Guards the verb-equals-feature reflex, the features counterpart of small-project-entities, which no case covered.",
       "source": "feature-sliced-design/SKILL.md",
       "rule": "Section 2, Step 3; Section 5-1"
+    },
+    {
+      "id": "user-entity-does-not-own-token",
+      "prompt": "We now have entities/user because profile identity is reused across the app. Should I move the access and refresh tokens out of shared/auth into entities/user?",
+      "expect": "Not because the entity exists. The official Auth guide accepts a token store in Shared or in a current-user entity, so either can be right, but an entity appearing does not by itself move credential ownership. Keep tokens where their management already lives unless you are deliberately adopting the entity approach and its way of reaching the API client.",
+      "why": "The boundary between reusable user-domain state and authentication infrastructure moved twice while these references were being aligned, in 7f37c3e and 3858589.",
+      "source": "feature-sliced-design/references/auth-and-api.md",
+      "rule": "When to use shared/auth vs a user entity"
+    },
+    {
+      "id": "single-consumer-crud",
+      "prompt": "Only the settings page calls updateNotificationSettings. It is a plain PATCH with no business rules. Should it go in shared/api because it is CRUD?",
+      "expect": "No. Keep it in pages/settings/api/ while that page is its only consumer. CRUD not being entity material does not make it Shared material; it moves to shared/api once it is genuinely shared.",
+      "why": "Guards pages-first request ownership against the shortcut that CRUD always goes to shared/api, which three passages stated before 7f37c3e.",
+      "source": "feature-sliced-design/references/auth-and-api.md",
+      "rule": "Request placement rule, Question 1"
     }
   ]
 }
