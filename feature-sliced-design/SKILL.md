@@ -269,7 +269,9 @@ from it), so changes propagate widely.
 3. **Business logic does not automatically require an entity.** Keeping types
    in `shared/api` and logic in the current slice's `model/` segment may
    be sufficient.
-4. **Place CRUD in `shared/api/`.** CRUD is infrastructure, not entities.
+4. **CRUD is infrastructure, not entities.** Place it by the request
+   placement rule: with its consumer while there is one, in `shared/api/`
+   once several slices call it.
 5. **Place auth data in `shared/auth/` or `shared/api/`.** Tokens and login
    DTOs are auth-context-dependent and rarely reused outside authentication.
 

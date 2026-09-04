@@ -88,16 +88,20 @@ entities/
     index.ts
 ```
 
-The DTO lives in `shared/api/endpoints/order.ts`. Business logic that
-operates on it (calculating discounts, applying promotions) lives in
-`entities/order/model/`. Do not mirror every API endpoint with a
-corresponding entity.
+The DTO lives in `shared/api/endpoints/order.ts`. Once an `order`
+boundary has been earned, reusable rules that operate on it (calculating
+discounts, applying promotions) live in `entities/order/model/`. Until
+then they stay in the consuming slice's `model/`. Do not mirror every API
+endpoint with a corresponding entity.
 
 ### 3. Exclude CRUD operations from entities
 
 CRUD operations involve boilerplate code without significant business
 logic. Putting them in `entities` clutters the layer and obscures the code
-that genuinely matters. Place CRUD in `shared/api`:
+that genuinely matters. Where it goes instead is the request placement
+rule's answer, not a fixed path: a single consumer keeps it in that
+slice's `api/`, and plain resource access shared across consumers lands
+in `shared/api` (`references/auth-and-api.md`):
 
 ```text
 shared/
@@ -177,7 +181,7 @@ manage.
 ## Decision tree for AI agents
 
 ```text
-A new piece of business logic needs a home.
+A new piece of domain-related code or state needs a home.
   │
   ├─ Is the project a thin client?
   │   └─ YES → Strong signal to start without entities. Keep reading
@@ -187,12 +191,14 @@ A new piece of business logic needs a home.
   │   └─ YES → Keep in the consuming slice's model/. Defer extraction.
   │
   ├─ Is it a CRUD operation without business meaning?
-  │   └─ YES → shared/api/endpoints/<resource>.ts
+  │   ├─ One consumer → that slice's api/ segment
+  │   └─ Shared across consumers → shared/api/endpoints/<resource>.ts
   │
   ├─ Is it auth data (tokens, session, login DTOs)?
   │   ├─ Project has no entities layer yet?
   │   │   └─ YES → shared/auth/
-  │   ├─ Profile identity reused outside the login flow?
+  │   ├─ Is there a stable user-domain responsibility outside
+  │   │  authentication that needs one shared home?
   │   │   └─ YES → entities/user/ (tokens still shared/auth)
   │   └─ Otherwise → shared/auth/ (default).
   │       Avoid placing in a page, widget, or single feature slice.
@@ -215,16 +221,17 @@ A new piece of business logic needs a home.
   `shared/api`. Entities exist for business logic, not for paralleling the
   backend structure.
 - **Creating a `user` entity *only* to wrap a login response.** A `user`
-  entity is justified when profile data is reused across non-auth flows
-  (avatars in comments, names in posts) or when token logic is genuinely
-  tied to user business logic. Until that reuse appears, `shared/auth`
-  is simpler. Storing tokens in a page, widget, or single feature slice is
-  discouraged regardless of the project shape.
+  entity is justified when a stable user-domain responsibility is shared
+  across non-auth flows (avatars in comments, names in posts). Until then
+  `shared/auth` is simpler, and authentication tokens and session
+  infrastructure stay there either way. Storing tokens in a page, widget,
+  or single feature slice is discouraged regardless of the project shape.
 - **Splitting one domain into many entities (`order`, `order-item`,
   `order-customer-info`).** This produces `@x` chains. Merge into a single
   isolated context (`order-info` or `order`).
-- **Putting CRUD wrappers in entities.** They clutter the layer. CRUD goes
-  in `shared/api/endpoints/`.
+- **Putting CRUD wrappers in entities.** They clutter the layer. Place
+  them by the request placement rule: with their consumer while there is
+  one, in `shared/api/endpoints/` once several slices call them.
 
 ## See also
 
