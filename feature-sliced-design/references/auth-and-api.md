@@ -12,8 +12,10 @@ is: what goes in `shared/`, what goes in `features/` or `pages/`?
 
 ### Auth data: `shared/auth/` or `shared/api/`
 
-Tokens, session state, and login utilities are **infrastructure**, not
-business logic. Keep them in shared:
+Credential storage, authentication-session plumbing, and the API-client
+helpers around them are **infrastructure**, not business logic. Keep them
+in shared. The login flow itself, its form state, validation and error
+handling, is a user action and does not come with them:
 
 ```typescript
 // shared/auth/token.ts
@@ -83,7 +85,7 @@ can be placed in `shared/ui`. This component should not include login-specific
 logic such as authentication requests, input validation or authentication
 state management.
 
-The UI and logic required for login should be managed in `features/login`.
+The UI and logic required for login should be managed in `features/auth`.
 When necessary, `LoginDialog` can be implemented by composing the dialog
 component from `shared/ui`.
 
@@ -144,7 +146,7 @@ It is not recommended to place the token store in `pages` or in a specific
 Tokens are not state that belongs only to a specific page or a single user
 action. They are application-wide state used by multiple authenticated API
 requests and user flows.
-For example, if the token store is placed in `features/login`, another feature
+For example, if the token store is placed in `features/auth`, another feature
 cannot directly import it. Different feature slices on the same layer should
 remain independent from one another.
 
@@ -188,8 +190,23 @@ shared/
 If the logout request is used only as part of a specific logout flow, it can
 be placed in the `api` segment of `features/logout`.
 If logout is reused across multiple screens and represents an independent user
-flow that includes token cleanup, user state cleanup, error handling, and
-navigation, the flow can be extracted into `features/logout`.
+flow that includes token cleanup, user state cleanup, and error handling,
+the flow can be extracted into `features/logout`.
+
+Navigation is the exception. `features/logout` must not import the router
+from `app/`, which would be an upward import (Rule 4-1). Let the page or
+route configuration navigate after the action resolves, or pass the
+navigation callback into the feature:
+
+```typescript
+// pages/settings/ui/SettingsPage.tsx
+const logout = useLogout();
+
+const onLogout = async () => {
+  await logout();
+  navigate("/login");
+};
+```
 
 ```text
 features/
@@ -240,6 +257,13 @@ taken into account.
 > are managed on the Shared layer, they can be separated into a module
 > responsible for authentication, such as `shared/auth`.
 
+The refresh failure is usually detected by the API client in `shared/api`,
+which cannot reach an entity to clear its state: that would be an upward
+import. Report the failure upward instead, through the callback, event, or
+context the official guide already uses to hand the token down, and let the
+layer that owns the state do the resetting. The same wiring that gets the
+token into the client carries the failure back out.
+
 ## Type definitions
 
 ### Where to define types
@@ -252,7 +276,7 @@ The location of type definitions follows the same rules as any other code:
 | Types for a specific entity's domain model | `entities/<name>/model/<name>.ts` |
 | Types used only within one page | `pages/<name>/model/<name>.ts` |
 | Types used only within one feature | `features/<name>/model/<name>.ts` |
-| Generic utility types (e.g., `Nullable<T>`) | Domain-named files in `shared/lib/` (e.g., `shared/lib/nullable.ts`) |
+| Generic utility types (e.g., `Nullable<T>`) | Purpose-named files in `shared/lib/` (e.g., `shared/lib/nullable.ts`) |
 
 Per Rule 4-4 (domain-based file naming), avoid grouping all types in
 `types.ts` or `utils.ts`. A file named `types.ts` cannot answer "types
@@ -274,24 +298,34 @@ export interface ProductDTO {
 ### Example: domain types in entities
 
 ```typescript
-// entities/product/model/product.ts: domain model layered on top
+// entities/product/model/product.ts: the shape the domain works with
 import type { ProductDTO } from "@/shared/api";
 
-export interface Product extends ProductDTO {
-  formattedPrice: string;
-  isOnSale: boolean;
+export interface Product {
+  id: string;
+  name: string;
+  price: number;
+  listPrice: number;
+  inStock: boolean;
 }
 
-export const fromDTO = (dto: ProductDTO): Product => ({
-  ...dto,
-  formattedPrice: `$${dto.price.toFixed(2)}`,
-  isOnSale: dto.price < 10,
+export const fromProductDTO = (dto: ProductDTO): Product => ({
+  id: dto.id,
+  name: dto.name,
+  price: dto.price,
+  listPrice: dto.listPrice,
+  inStock: dto.stock > 0,
 });
+
+// a rule, not a stored flag: it follows the price rather than a snapshot
+export const isOnSale = (product: Product) =>
+  product.price < product.listPrice && product.inStock;
 ```
 
-**Key principle:** Raw API shapes go in `shared/api/`. Domain models with
-business logic go in `entities/`. If you only need the raw shape, do not
-create an entity just for types.
+**Key principle:** Raw API shapes go in `shared/api/`. A domain model stays
+with its current consumer until an entity boundary has been earned; once it
+has, the types and rules that entity owns live in its `model/`. If you only
+need the raw shape, do not create an entity just for types.
 
 ## API request handling
 
@@ -346,7 +380,8 @@ export const createCrudApi = <T>(resource: string) => ({
 
 Two questions decide where a request function goes. Ask them in order.
 
-**Question 1: how many slices consume it today?**
+**Question 1: does one consumer own this request, or is it genuinely
+shared?**
 
 One consumer means the request stays with that consumer. This is the
 pages-first rule applied to `api/` segments.
@@ -356,7 +391,7 @@ pages-first rule applied to `api/` segments.
 - An action owned by a single feature (e.g., `toggleLike`) →
   `features/<name>/api/`
 
-Two or more consumers: continue to question 2.
+Genuinely shared between consumers: continue to question 2.
 
 **Question 2: does the request carry domain rules?**
 
@@ -370,8 +405,10 @@ Knowing a resource's URL and response shape is not a domain rule.
 - Domain rules → `entities/<name>/api/`, once the boundary is stable.
 
 A `getUserById` that only wraps `GET /users/:id` stays in `shared/api/`
-even when every page calls it. A `getUserById` that resolves the caller's
-permissions before returning belongs in `entities/user/api/`.
+even when every page calls it. If it resolves the caller's permissions
+first, ask who owns that rule: an established user domain puts it in
+`entities/user/api/`, while a rule that only one screen applies stays with
+that page or feature.
 
 > **Where this comes from.** The official API requests guide defaults
 > request functions to `shared/api` or the consuming slice's `api`
