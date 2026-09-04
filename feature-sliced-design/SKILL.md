@@ -476,7 +476,8 @@ Do **not** preload all references.
 
 - **When integrating FSD with a specific framework** (Next.js with App Router
   or Pages Router, React Router, Nuxt, Vite, Astro) for wiring routes to
-  FSD pages, placing middleware/instrumentation files, structuring API
+  FSD pages, placing proxy/middleware and instrumentation files,
+  structuring API
   route handlers, or configuring path aliases:
   → Read `references/framework-integration.md`
 

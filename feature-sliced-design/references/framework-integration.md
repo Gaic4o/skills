@@ -9,9 +9,11 @@ Place FSD layers inside `src/` to avoid naming conflicts with framework
 directories. The FSD `app/` and `pages/` layers are **not** the same as
 framework directories with the same names (e.g., Next.js `app/`).
 
-All FSD projects follow the same `@/<layer>/*` path alias convention. The
-exact configuration differs by framework. See each framework section
-below. Astro is the one exception, using a single `@/*` alias instead.
+Examples here import through `@/` pointing at `src/`. Alias setup is a
+tooling choice, not an FSD rule: one `@/*` entry works everywhere, and
+per-layer entries are equally fine. It changes no layer semantics.
+Configure an entry only for a layer the project actually has. Each
+framework section shows the minimum that framework needs.
 
 The FSD layers inside `src/` keep the standard shape described in
 `references/layer-structure.md`. Each section below shows only what the
@@ -95,8 +97,9 @@ export default function RootLayout({ children }) {
 export { ExamplePage as default, metadata } from '@/_pages/example';
 ```
 
-Always re-export both the component and `metadata`. Route files contain
-no logic.
+Keep route files free of logic. Re-export the page component plus
+whatever route exports the framework needs and the FSD page provides,
+such as `metadata` or `generateMetadata` when the page has one.
 
 ### Pages Router
 
@@ -127,14 +130,25 @@ export { Example as default } from '@/_pages/example';
 export { App as default } from '@/_app/custom-app';
 ```
 
-The custom App component itself lives in `src/_app/custom-app/` and exports
-`App` from its public API like any other FSD slice.
+The custom App implementation lives in `src/_app/custom-app/` and exposes
+only what the framework entry file imports. App has no slices, so treat
+this as a segment boundary inside the layer, not a slice.
 
-### Middleware and instrumentation
+### Proxy and instrumentation
 
-`middleware.js` and `instrumentation.js` must live at the **project root**,
-next to the Next.js `app/` and `pages/` folders. Next.js will not detect
-them inside `src/`.
+`proxy.ts` and `instrumentation.ts` sit at the framework boundary, not
+inside the FSD layers. Next.js looks for them in the project root, or in
+`src/` when the Next.js app itself uses `src/`, at the same level as its
+`app/` or `pages/` folder. Keep them there and out of `src/_app/`.
+
+Next.js 16 deprecated the `middleware` convention and renamed it `proxy`;
+older projects still use `middleware.ts`.
+
+> **Where this comes from.** The official Next.js guide on fsd.how says
+> both files must be in the project root and that Next.js will not find
+> them under `src/`. That matched earlier Next.js versions and is no
+> longer what the framework documents, so this section follows the
+> framework.
 
 ### Route Handlers (API routes)
 
@@ -235,6 +249,13 @@ Nuxt keeps file routing in `pages/` at the project root, the name FSD
 reserves for the pages layer. The official Nuxt guide resolves this by
 moving Nuxt's routing folder inside the FSD `app` layer and giving `src/`
 a single `@` alias. This section mirrors that guide.
+
+The shape below is a Nuxt 3 project, which is what the official guide
+covers. Nuxt 4 changed the default `srcDir` to `app/` and moves `pages/`,
+`layouts/`, and `components/` under it, so its framework `app/` collides
+with the FSD app layer the way Next.js does. No official FSD guide covers
+that layout yet. A Nuxt 4 project can keep the Nuxt 3 shape, which Nuxt
+still auto-detects, and follow this section.
 
 ### Directory structure
 
@@ -395,12 +416,18 @@ import { ProductPage, fetchProduct } from "@/pages/product";
 export const loader = ({ params }: Route.LoaderArgs) =>
   fetchProduct(params.id);
 
-export default ProductPage;
+export default function ProductRoute({ loaderData }: Route.ComponentProps) {
+  return <ProductPage product={loaderData} />;
+}
 ```
 
-A loader is a route-module export, so it has to live in the wrapper. Keep
-it to one call into the page's `api` segment or `shared/api`; data shaping
-belongs in FSD, not in the route file.
+**Framework requirement:** `loader` and the default component are Route
+Module exports, so both live in the route file, and React Router hands
+the component its generated `Route.ComponentProps`.
+
+**This skill's recommendation:** let the generated types stop there. The
+wrapper makes one call into the page's `api` segment or `shared/api` and
+passes plain props down, so the FSD page stays framework-independent.
 
 ### Path aliases
 
