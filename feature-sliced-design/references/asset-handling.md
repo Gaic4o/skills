@@ -1,8 +1,9 @@
 # Asset Handling
 
 How to place static assets (images, icons, fonts, PDFs, stylesheets) inside an
-FSD project. Assets follow the same placement rules as code: group by use
-case, not by type, and keep them next to the code that uses them.
+FSD project. Assets follow the same ownership rules as code: keep each one
+with the module whose lifecycle it shares, rather than grouping them by
+file type or by how many places use them.
 
 > **Caution:** A custom top-level `assets` segment that aggregates all static
 > files is **not recommended**. It violates the FSD principles of high
@@ -10,15 +11,16 @@ case, not by type, and keep them next to the code that uses them.
 
 ## Decision tree
 
-1. **Used by one slice?** Keep the asset inside that slice, usually in the
-   `ui/` segment, or in `model/` if it is part of business logic.
+1. **Owned by one slice?** Keep it in that slice, next to the segment that
+   consumes it. A presentation asset usually lands in `ui/`; one coupled to
+   domain logic can live in `model/`.
 2. **Must several consumers share one authoritative copy (a logo, the
    placeholder icon)?** Put it with the shared module that owns it, which
    for a presentation asset is `shared/ui/`. Two assets that merely look
    alike today and will change for their own reasons stay local.
 3. **Global stylesheet, font, or app-level resource?** Place it in the
    `app/` layer, by convention `app/styles/` and `app/fonts/`.
-4. **Served as-is by the bundler (favicon, robots.txt)?** Use the framework's
+4. **Served as-is (favicon, robots.txt)?** Use the framework's
    `public/` folder. The `public/` folder is not part of FSD and does not
    conflict with FSD layers.
 
@@ -111,8 +113,8 @@ ones; `references/layer-structure.md` covers how App segments are named.
 
 ## Public folder
 
-Most bundlers expose a `public/` folder at the project root. Files here are
-served as-is, without bundling or hashing.
+Most frameworks and build tools provide a static-asset directory at the
+project root. Files there are served as-is, without bundling or hashing.
 
 The default is `public/` at the project root in Vite, Next.js, Nuxt, and
 Astro. Whether it can be moved is framework-specific: Vite and Astro both
@@ -140,17 +142,16 @@ src/
   shared/
 ```
 
-A bundler whose public directory is configurable, such as Vite, can point
-it at a project-local folder next to the entrypoint. That is a config
-choice for that project, not a layout to reach for by default.
+Where the framework lets that directory be configured, treat wherever it
+points as a framework boundary, not as an FSD segment.
 
 ## Summary table
 
 | Asset                                  | Location                                  |
 | -------------------------------------- | ----------------------------------------- |
-| Image used by one page/widget/feature  | Inside the slice's `ui/` segment          |
+| Asset owned by one slice               | Inside that slice, next to its consumer   |
 | PDF or template tied to business logic | Inside the slice's `model/` segment       |
-| Icon reused across the app             | `shared/ui/` (topical subfolder if many)  |
+| Presentation asset several must share  | `shared/ui/`, with the module owning it   |
 | Icon used by exactly one shared kit UI | Next to that component in `shared/ui/`    |
 | Global CSS reset, theme variables      | `app/styles/`                             |
 | Web fonts                              | App layer when bundled, else public dir   |
@@ -161,15 +162,16 @@ choice for that project, not a layout to reach for by default.
 - **Do not create a top-level `assets/` segment** that holds all images,
   fonts, and icons. It breaks cohesion and forces consumers to import from a
   folder unrelated to the code they are working on.
-- **Do not extract a slice-local asset to `shared/` "in case" it gets
-  reused.** Move it only when actual reuse appears.
+- **Do not extract a slice-owned asset to `shared/` "in case".** Move it
+  when shared ownership is real and one authoritative copy should serve
+  several consumers.
 - **Do not place CSS modules in an `assets/` folder.** A component's
   stylesheet belongs next to that component in `ui/`.
 - **Do not name an FSD segment `public`.** The framework's `public/` folder
   is reserved and lives outside `src/`.
-- **Do not split assets and the components that use them.** A page that
-  ships a hero image should keep that image in the page so removing the page
-  removes the image.
+- **Do not separate an asset from its owning module without a boundary
+  reason.** A page that ships a hero image keeps it, so removing the page
+  removes the image. A fixed public URL is such a reason; convenience is not.
 
 ## See also
 
