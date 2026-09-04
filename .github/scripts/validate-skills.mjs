@@ -265,12 +265,24 @@ function validateSkill(skillDirectory, documentsBySkill) {
   for (const filePath of documentFiles(skillDirectory)) {
     const documentLines =
       filePath === skillFile ? lines : readLines(filePath);
+    let inFence = false;
 
     for (const [index, line] of documentLines.entries()) {
+      if (/^\s*```/.test(line)) {
+        inFence = !inFence;
+        continue;
+      }
+
       for (const match of line.matchAll(REFERENCE_PATH_PATTERN)) {
         const referenceName = match[1];
 
-        if (filePath === skillFile && inSection(routingSection, index)) {
+        // A path written in a fenced example still has to resolve, but an
+        // example is not a rule that routes a situation to the file.
+        if (
+          filePath === skillFile &&
+          !inFence &&
+          inSection(routingSection, index)
+        ) {
           mentionedInSkill.add(referenceName);
         }
 
@@ -330,8 +342,10 @@ const HEADING_PATTERN = /^#{1,6}\s+(.+?)\s*$/;
 const BOLD_LABEL_PATTERN = /^\s*(?:[-*>]\s+|\d+\.\s+)?\*\*(.+?)(?:\*\*|$)/;
 const SKILL_SCOPED_TOKEN_PATTERN =
   /\b(Sections?|Rules?)\s+(\d+(?:-\d+)?(?:(?:,\s*|,?\s+and\s+)\d+(?:-\d+)?)*)\b/g;
+// Ids are a single letter or a run of digits, so a package that reaches
+// Step 10 keeps being checked instead of silently dropping out.
 const PACKAGE_SCOPED_TOKEN_PATTERN =
-  /\b(Steps?|Strateg(?:y|ies)|Snapshots?|Parts?|Questions?)\s+([A-Z0-9](?:(?:,\s*|,?\s+and\s+)[A-Z0-9])*)\b/g;
+  /\b(Steps?|Strateg(?:y|ies)|Snapshots?|Parts?|Questions?)\s+((?:[A-Z]|\d+)(?:(?:,\s*|,?\s+and\s+)(?:[A-Z]|\d+))*)\b/g;
 const NAMED_RULE_PATTERN = /\bthe ((?:[a-z@][\w@/-]*\s+){1,3}rule)\b/gi;
 const QUOTED_PHRASE_PATTERN = /'([^']+)'|"([^"]+)"/g;
 
@@ -384,7 +398,7 @@ function collectAnchors(lines) {
     }
 
     const scoped = text.match(
-      /^(Step|Strategy|Snapshot|Part|Question)\s+([A-Z0-9])\b/,
+      /^(Step|Strategy|Snapshot|Part|Question)\s+([A-Z]|\d+)\b/,
     );
 
     if (scoped !== null) {
@@ -659,7 +673,7 @@ function validateEvals(documentsBySkill) {
     return;
   }
 
-  const cases = parsed.cases;
+  const cases = parsed?.cases;
 
   if (!Array.isArray(cases) || cases.length === 0) {
     recordError(evalsFile, "must contain a non-empty cases array");
