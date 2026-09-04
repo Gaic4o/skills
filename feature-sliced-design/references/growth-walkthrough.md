@@ -4,8 +4,8 @@ One small shop through four snapshots, showing which moments earn a layer
 and which do not. Read it when starting a project, or when deciding
 whether entities are needed yet. Each snapshot gives the tree, what
 changed in the product, and which rule from `SKILL.md` decided the
-response. Two of the four create nothing: a layer is earned by a rule that
-needs one home, not by a count of how many places use something.
+response. Not every product change earns a layer: a layer is earned by a
+rule that needs one home, not by a count of how many places use something.
 
 ## Snapshot 0: two pages, three layers
 
@@ -45,15 +45,17 @@ product rule (Section 2, Step 2). The sale rule sits in the product page
 because only that page applies it (Step 1). This is complete, valid FSD
 (Section 5-3).
 
-## Snapshot 1: a third page reuses product data, nothing new appears
+## Snapshot 1: a third page reuses product data, no layer appears
 
-A search page is added. It fetches products and shows them as cards.
+A search page is added. It fetches products, shows them as cards, and
+marks the ones on sale.
 
 ```text
   pages/
     search/                     ← new slice
       ui/SearchPage.tsx
       ui/ProductCard.tsx        ← a second card, copied from home
+      model/is-on-sale.ts       ← a second copy of the rule, from product
       index.ts
 ```
 
@@ -75,13 +77,18 @@ duplication is manageable, so separate copies are valid. Extracting now
 would force two cards that want to differ into one component that has to
 serve both.
 
+**The rule is copied too.** The search card marks sale items, so
+`is-on-sale.ts` is copied out of the product page. Two copies of a
+two-line rule are cheap, and so far nothing forces them to disagree. A
+second copy is not a boundary on its own. What turns one into a boundary
+is the subject of Snapshot 2.
+
 ## Snapshot 2: a rule diverges, `entities/product` appears
 
 Marketing changes what "on sale" means: the price must be below the list
 price *and* the item must be in stock. The product page is updated. The
-search page, which copied the old rule when it copied the card, is not.
-Search now shows a sale badge on items the detail page says are not on
-sale.
+copy in the search page, made in Snapshot 1, is not. Search now marks
+items on sale that the detail page says are not.
 
 This is the signal. The two copies are the same rule, they must agree,
 and they no longer do. Check the three conditions in Section 1:
@@ -97,7 +104,7 @@ All three hold, so the rule gets one home (Step 4).
 ```text
   entities/                     ← new layer
     product/
-      model/is-on-sale.ts       ← moved from pages/product; the one home
+      model/is-on-sale.ts       ← replaces both copies; the one home
       index.ts
   pages/
     product/
@@ -120,9 +127,9 @@ enough.
 
 ## Snapshot 3: an action is reused, `features/add-to-cart` appears
 
-The product page has had an "Add to cart" button since Snapshot 0, with
-its request and an optimistic cart update in the page's `api` and `model`
-segments. Search results now get the same button.
+Between Snapshots 2 and 3 the product page gains an "Add to cart" button,
+with its request and an optimistic cart update in the page's `api` and
+`model` segments. Search results now need the same action.
 
 Step 3 asks whether this is a complete user action, used in multiple
 places, with a stable boundary. The button, the request, and the cart
@@ -153,7 +160,7 @@ says not to reach for it.
 | Moment | Trigger | Response | Rule |
 | --- | --- | --- | --- |
 | 0 | Two pages | `app/`, `pages/`, `shared/` | Section 5-3 |
-| 1 | Third page reads product data | Nothing new; copy the card | Step 1, Step 2 |
+| 1 | Third page reads product data | No layer; copy the card and rule | Step 1, Step 2 |
 | 2 | Same rule, two copies, one stale | `entities/product/model` | Section 1, Step 4 |
 | 3 | Same complete action on two pages | `features/add-to-cart` | Step 3 |
 
