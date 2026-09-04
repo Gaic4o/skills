@@ -94,8 +94,8 @@ When writing new code, follow this tree:
 - Used in only one page → keep it in that `pages/` slice.
 - Used in 2+ pages but duplication is manageable → keeping separate copies
   in each page is also valid.
-- An entity or feature used in only one page → keep it in that page
-  (Steiger reports this as `insignificant-slice`).
+- An entity or feature with a single consumer → keep it there (Steiger
+  flags this as `insignificant-slice`).
 
 **Step 2: Is it reusable infrastructure with no business logic?**
 
@@ -112,16 +112,17 @@ decide; go back to Step 1 and place it by where it is used.
 - Utility functions → `shared/lib/`
 - API client, route constants → `shared/api/` or `shared/config/`
 - Auth tokens, session management → `shared/auth/`
-- CRUD operations → `shared/api/`
+- CRUD once several slices call it → `shared/api/` (a single caller keeps
+  it, see Step 1)
 
-**Step 3: Is it a complete user action currently used in multiple places,
-with stable boundaries?**
+**Step 3: Is it a complete user action that several consumers share, with
+a focused responsibility and a reason to change of its own?**
 
 - Yes → `features/`
 - Uncertain, single use, or speculative reuse → keep in the page.
 
-**Step 4: Is it a business domain model currently used in multiple places,
-with stable boundaries?**
+**Step 4: Is it a business domain model that several consumers share, with
+a focused responsibility and a reason to change of its own?**
 
 - Yes → `entities/`
 - Uncertain, single use, or speculative reuse → keep in the page.
@@ -130,8 +131,8 @@ with stable boundaries?**
 
 - Global providers, router, theme → `app/`
 
-**Golden Rule: When in doubt, keep it in `pages/`. Extract only when the
-same code is actively used in multiple places and the boundary is clear.**
+**Golden Rule: When in doubt, keep it in `pages/`. Extract only when all
+three conditions in Section 1 hold.**
 
 ## 3. Quick placement table
 
@@ -183,11 +184,12 @@ segment (`shared/ui/index.ts`, `shared/api/index.ts`, etc.) rather than
 one top-level `shared/index.ts`. This keeps imports from Shared
 organized by intent.
 
-`shared/ui` and `shared/lib` are collections of unrelated modules, so a
-single index there can bloat bundles and defeat tree-shaking, and a large
-number of index files slows the dev server. When that happens, give each
-component or library its own index instead (`shared/ui/Button/index.ts`,
-imported as `@/shared/ui/Button`). That folder is then the boundary.
+A segment can hold unrelated modules, `shared/ui` and `shared/lib` most
+often, and one index over all of them can bloat bundles and defeat
+tree-shaking while many index files slow the dev server. When that
+happens, give each component, library, or controller folder its own index
+(`shared/ui/Button/index.ts` as `@/shared/ui/Button`, `shared/api/post/`
+as `@/shared/api/post`). That folder is then the boundary.
 Reaching past it into internals (`@/shared/ui/Button/Button.tsx`) is
 still a violation. See `references/layer-structure.md` for the shape.
 
@@ -299,8 +301,9 @@ src/
 [Steiger](https://github.com/feature-sliced/steiger) is the official FSD
 linter. Key rules:
 
-- **`insignificant-slice`**: Suggests merging an entity/feature into its page
-  if only one page uses it.
+- **`insignificant-slice`**: Flags a slice with no references, or with one,
+  and suggests merging it into the layer above. Pages may hold a single
+  reference, and so may slices used only from `app/`.
 - **`excessive-slicing`**: Suggests merging or grouping when a layer has too
   many slices.
 

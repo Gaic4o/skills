@@ -5,8 +5,8 @@
     {
       "id": "auth-token",
       "prompt": "Where do I put the auth token and session helpers?",
-      "expect": "shared/auth/ (or shared/api/). Not a user entity.",
-      "why": "Tokens and session DTOs are infrastructure, not a domain model, and are rarely reused outside authentication.",
+      "expect": "shared/auth/ (or shared/api/). Do not create a user entity to hold the token; whether an existing current-user entity may store it is a separate question.",
+      "why": "Tokens and session DTOs are infrastructure, not a domain model, and wrapping a login response in an entity is the common wrong turn.",
       "source": "feature-sliced-design/SKILL.md",
       "rule": "Section 2, Step 2; Section 6 anti-pattern on the user entity"
     },
@@ -142,7 +142,7 @@
       "id": "user-entity-does-not-own-token",
       "prompt": "We now have entities/user because profile identity is reused across the app. Should I move the access and refresh tokens out of shared/auth into entities/user?",
       "expect": "Not because the entity exists. The official Auth guide accepts a token store in Shared or in a current-user entity, so either can be right, but an entity appearing does not by itself move credential ownership. Keep tokens where their management already lives unless you are deliberately adopting the entity approach and its way of reaching the API client.",
-      "why": "The boundary between reusable user-domain state and authentication infrastructure moved twice while these references were being aligned, in 7f37c3e and 3858589.",
+      "why": "The line between reusable user-domain state and authentication infrastructure moved twice while these references were being aligned, so pin where it landed.",
       "source": "feature-sliced-design/references/auth-and-api.md",
       "rule": "When to use shared/auth vs a user entity"
     },
@@ -150,7 +150,7 @@
       "id": "single-consumer-crud",
       "prompt": "Only the settings page calls updateNotificationSettings. It is a plain PATCH with no business rules. Should it go in shared/api because it is CRUD?",
       "expect": "No. Keep it in pages/settings/api/ while that page is its only consumer. CRUD not being entity material does not make it Shared material; it moves to shared/api once it is genuinely shared.",
-      "why": "Guards pages-first request ownership against the shortcut that CRUD always goes to shared/api, which three passages stated before 7f37c3e.",
+      "why": "Guards pages-first request ownership against the shortcut that CRUD always goes to shared/api, which three passages stated before this alignment.",
       "source": "feature-sliced-design/references/auth-and-api.md",
       "rule": "Request placement rule, Question 1"
     }
