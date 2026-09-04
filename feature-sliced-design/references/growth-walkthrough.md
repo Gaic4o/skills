@@ -6,8 +6,8 @@ whether entities are needed yet. Each snapshot gives the tree, what
 changed in the product, and which rule from `SKILL.md` decided the
 response. Every decision here comes from `SKILL.md`; this file adds no
 placement rules of its own. Not every product change earns a layer: a
-layer is earned by a rule that needs one home, not by a count of how
-many places use something.
+layer is earned by a stable responsibility that needs one home, not by a
+count of how many places use something.
 
 ## Snapshot 0: two pages, three layers
 
@@ -128,13 +128,14 @@ All three hold, so the rule gets one home (Step 4).
       ui/ProductCard.tsx        ← stays; calls the same isOnSale
   shared/
     api/
-      endpoints/product.ts      ← ProductDTO stays here
+      product.ts                ← ProductDTO stays here
 ```
 
-**What did not move.** The DTO stays in `shared/api`. The official
-excessive-entities guide keeps data definitions in `shared/api` even for
-reusable business logic and moves only the logic into the entity's
-`model` (Section 5-2, item 3). The badge and the cards stay in their
+**What did not move.** The transport type `ProductDTO` stays in
+`shared/api`. The official excessive-entities guide moves the logic into
+the entity's `model` and leaves the API shape where it was (Section 5-2,
+item 3). A transport type does not follow business logic into an entity
+just because that logic reads it. The badge and the cards stay in their
 pages: they are UI, and Section 6 warns against adding UI to entities
 until there is a reason. The entity is one file and an index. That is
 enough.
@@ -150,12 +151,16 @@ places, with a stable boundary. The button, the request, and the cart
 update form one action; two pages use it; adding to the cart means the
 same thing from either page. Extract it.
 
+The request goes with the feature because it is the add-to-cart use case
+itself, not a generic cart CRUD wrapper. A plain reusable cart request
+would have stayed in `shared/api` however many slices called it.
+
 ```text
   features/                     ← new layer
     add-to-cart/
       ui/AddToCartButton.tsx
-      api/add-to-cart.ts        ← owned by one feature, so it lives here
-      model/cart-store.ts       ← cart state; only this feature touches it
+      api/add-to-cart.ts        ← the use case itself, not cart CRUD
+      model/add-to-cart.ts      ← pending and optimistic state for it
       index.ts
   pages/
     product/
@@ -164,10 +169,12 @@ same thing from either page. Extract it.
       ui/ProductCard.tsx        ← renders <AddToCartButton />
 ```
 
-**What did not appear.** A `cart` entity. The cart store has exactly one
-consumer, this feature, so Step 4 keeps it where it is. A `widgets/`
-layer. Nothing in four snapshots needed one, and the callout in Section 1
-says not to reach for it.
+**What did not appear.** A `cart` entity. The state here exists only to
+run the add-to-cart interaction and carries no cart-domain responsibility
+anyone else could reuse, so Step 4 keeps it inside the feature. A cart a
+checkout page and an order summary both had to agree on would be a
+different question. A `widgets/` layer. Nothing in four snapshots needed
+one, and the callout in Section 1 says not to reach for it.
 
 ## What the walkthrough shows
 
@@ -178,9 +185,10 @@ says not to reach for it.
 | 2 | Same rule, two copies, one stale | `entities/product/model` | Section 1, Step 4 |
 | 3 | Same complete action on two pages | `features/add-to-cart` | Step 3 |
 
-Reuse alone opened no layer. A rule that had to agree with itself opened
-`entities`; a complete action that two pages perform opened `features`.
-Everything else stayed where it was used.
+Reuse alone opened no layer. A domain rule that had to stay consistent
+across its consumers earned `entities`; a complete user action with one
+shared behavior earned `features`. Everything else stayed where it was
+used, and one request moved down without earning anything.
 
 Once a layer exists, `references/layer-structure.md` shows the full shape
 of its slices and segments. This file only shows the moment it appears.
