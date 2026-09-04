@@ -223,9 +223,10 @@ A new piece of domain-related code or state needs a home.
 - **Creating a `user` entity *only* to wrap a login response.** A `user`
   entity is justified when a stable user-domain responsibility is shared
   across non-auth flows (avatars in comments, names in posts). Until then
-  `shared/auth` is simpler, and authentication tokens and session
-  infrastructure stay there either way. Storing tokens in a page, widget,
-  or single feature slice is discouraged regardless of the project shape.
+  `shared/auth` is simpler. The official Auth guide accepts a token store
+  in Shared or in an entities slice for the current user or session
+  (`references/auth-and-api.md`); what it rules out is a page, widget, or
+  single feature slice.
 - **Splitting one domain into many entities (`order`, `order-item`,
   `order-customer-info`).** This produces `@x` chains. Merge into a single
   isolated context (`order-info` or `order`).
