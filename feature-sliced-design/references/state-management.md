@@ -19,34 +19,36 @@ owns the state with Section 2 of `SKILL.md`, then put the Redux code in
 that slice's `model/` segment. A `todo` noun does not make an entity, and
 a `toggle-todo` verb does not make a feature.
 
-Once a boundary has been earned, Step 6 says where a reused Redux slice
-can go: one that describes a business thing can move to Entities, one
-that describes an action users take can move to Features. Both halves
-assume the slice is already reused across pages. A slice used by a single
-page stays in that page's `model/` segment.
+Once a boundary has been earned, Step 6 gives two destinations: a stable
+reusable business-domain responsibility may move to Entities, a stable
+reusable user-interaction boundary may move to Features. Both assume the
+slice is already reused across pages. A slice used by a single page stays
+in that page's `model/` segment.
 
 ### Business-entity slice in entities
 
 The request is plain resource access, so it lives in `shared/api` with
 its DTO (Request placement rule in `references/auth-and-api.md`). The
-entity imports it; `model/` holds only the Redux wiring.
+entity imports it; `model/` holds only the Redux wiring. The entity uses
+the transport type as it is here; convert to a separate domain type only
+when a business rule needs a shape the backend does not send.
 
 ```typescript
 // shared/api/todo.ts
 import { apiClient } from "./client";
 
-export interface Todo { id: string; title: string; completed: boolean }
+export interface TodoDto { id: string; title: string; completed: boolean }
 
-export const getTodos = (): Promise<Todo[]> =>
+export const getTodos = (): Promise<TodoDto[]> =>
   apiClient.get("/todos").then((r) => r.data);
 ```
 
 ```typescript
 // entities/todo/model/todo.ts
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { getTodos, type Todo } from "@/shared/api";
+import { getTodos, type TodoDto } from "@/shared/api";
 
-interface TodoState { items: Todo[]; loading: boolean }
+interface TodoState { items: TodoDto[]; loading: boolean }
 
 export const fetchTodos = createAsyncThunk("todos/fetch", getTodos);
 
@@ -239,11 +241,12 @@ export const POST_QUERIES = {
 Consume with `useQuery(POST_QUERIES.detail({ id }))`. For pagination,
 `placeholderData: prev => prev` prevents UI flicker when navigating pages.
 
-**Benefits of a query factory:** all API requests for a domain live in
-one place, and every key and query function is reachable through the
-same object. Refetching becomes a one-line call
-(`queryClient.invalidateQueries({ queryKey: POST_QUERIES.all() })`)
-instead of a hunt for keys across the codebase.
+**Benefits of a query factory:** the keys and query definitions for a
+domain are reachable through one object, so consumers share them instead
+of rebuilding keys. Refetching and cache updates become a one-line call
+(`queryClient.invalidateQueries({ queryKey: POST_QUERIES.all() })`). The
+request functions themselves stay in their own files; the factory wires
+them to keys.
 
 ### Infinite scroll
 
@@ -347,9 +350,11 @@ global toast notifications instead of repeating error handling on every hook.
 
 ### Code generation
 
-Tools that generate clients from an OpenAPI/Swagger spec are less flexible
-than hand-written factories. If your spec is clean and you adopt a generator,
-place the generated code in `@/shared/api/`.
+The official guide notes that OpenAPI/Swagger generators are less flexible
+than the hand-written factory above. Whichever you pick, generated clients
+are transport code: keep them in `@/shared/api/`, or in a separate
+generated package. Do not move generated endpoints into entities because
+they happen to name business resources.
 
 ### Custom API client
 
@@ -374,7 +379,8 @@ export class ApiClient {
 export const apiClient = new ApiClient(API_URL);
 ```
 
-**Key principle:** Place query and mutation hooks in the slice that owns the
-domain. Page-specific queries stay in the page. Shared queries go in
-`shared/api/` or `entities/<name>/api/` depending on whether the project has
-an Entities layer.
+**Key principle:** Place query and mutation hooks with the slice that owns
+the responsibility. Page-specific queries stay in the page. Plain resource
+access and generic CRUD stay in `shared/api/`. Reach for
+`entities/<name>/api/` only when an established entity boundary owns that
+request; an Entities layer existing is not a placement rule.
