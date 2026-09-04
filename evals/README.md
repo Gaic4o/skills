@@ -43,13 +43,27 @@ Add an object to `cases` with all six fields:
 | `expect` | the placement, plus what must not happen if that matters |
 | `why` | what regression this case guards against |
 | `source` | repo-relative path to the primary file that decides it |
-| `rule` | the section or rule that decides it; name a rule from another file too when the decision leans on one |
+| `rule` | the passage that decides it, as `;`-separated fragments; name a passage from another file too when the decision leans on one |
 
 `source` names one file, the one to open first on a mismatch, even where
 the decision is settled by more than one passage. It must point at a file
 that exists, and `node .github/scripts/validate-skills.mjs` enforces that,
-so no case can cite a file that has been deleted. Nothing checks `rule`, so
-keep it in sync by hand when a heading or a rule name changes.
+so no case can cite a file that has been deleted.
+
+The validator also resolves every fragment of `rule` against the skill's
+documents, so a renamed heading or renumbered section fails the build
+instead of leaving a case pointing at nothing. A fragment resolves against
+`source` unless it names another file (`SKILL.md`, `auth-and-api.md`), and
+it must contain at least one of:
+
+- a numbered reference such as `Section 2, Step 3`, `Rule 4-2`,
+  `Strategy D`, `Snapshot 1`, or `Question 2`
+- a phrase in single or double quotes that appears verbatim in the file
+- the text of a heading or bold label in the file, such as `Decision tree`
+
+`Section N` and `Rule N-M` always mean a numbered heading in `SKILL.md`.
+Free prose after a numbered reference is allowed and not checked, so
+`Section 6 anti-pattern on the user entity` is fine.
 
 Write a case when it guards a mistake that is actually likely: a rule two
 readings could defend, a regression that has already happened once, or a
