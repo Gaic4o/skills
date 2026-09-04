@@ -111,17 +111,17 @@ them into a single larger slice.
 
 ```text
 // Before: two features that always change together
-features/profile/
-features/profile-settings/
+features/edit-profile/
+features/edit-profile-privacy/
 
 // After: one cohesive feature
-features/profile/
+features/edit-profile/
   ui/
-    Profile.tsx
-    ProfileSettings.tsx
+    EditProfileForm.tsx
+    PrivacyFields.tsx
   model/
-    profile.ts
-    profile-settings.ts
+    edit-profile.ts
+    privacy.ts
   index.ts
 ```
 
@@ -294,7 +294,7 @@ boundaries.
 export { useAuth } from "./model/use-auth";
 export { AuthButton } from "./ui/AuthButton";
 
-// features/profile/ui/ProfileMenu.tsx
+// features/edit-profile/ui/ProfileMenu.tsx
 import { useAuth, AuthButton } from "@/features/auth";
 
 export const ProfileMenu = () => {
@@ -304,7 +304,7 @@ export const ProfileMenu = () => {
 };
 ```
 
-The boundary holds: `features/profile` cannot import from
+The boundary holds: `features/edit-profile` cannot import from
 `@/features/auth/model/internal/*`. Only what `features/auth` explicitly
 exposes through `index.ts` is reachable.
 
