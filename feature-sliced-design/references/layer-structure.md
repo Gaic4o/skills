@@ -88,9 +88,9 @@ pages/
 state management, business logic, API integrations. Even code that looks
 reusable stays here if it is simpler to keep local.
 
-**Does not belong:** Code that is currently being reused across multiple
-pages with stable boundaries (extract to a lower layer when reuse is
-confirmed, not anticipated).
+**Does not belong:** Code that is already reused across multiple pages,
+has a stable focused responsibility, and must have one shared home.
+Extract when all three hold, not when reuse alone appears.
 
 ### Page layout patterns
 
@@ -100,7 +100,7 @@ local UI components:
 ```typescript
 // pages/product-detail/ui/ProductDetailPage.tsx
 import { AddToCart } from '@/features/add-to-cart';
-import { Product } from '@/entities/product';
+import { ProductCard } from '@/entities/product';
 import { PageHeader } from './PageHeader'; // local to this page
 
 export const ProductDetailPage = ({ productId }) => {
@@ -109,7 +109,7 @@ export const ProductDetailPage = ({ productId }) => {
   return (
     <>
       <PageHeader />
-      <Product.Card data={product} />
+      <ProductCard data={product} />
       <AddToCart productId={productId} />
       <RelatedProducts products={product.related} /> {/* local component */}
     </>
@@ -236,18 +236,27 @@ route configuration.
 
 ## Features layer
 
-Independent, reusable user interactions. **Create only when used in 2+ places.**
+Independent, reusable user interactions. Create a feature when an
+interaction is already reused across consumers, has a focused
+responsibility, and needs one shared implementation. A second consumer on
+its own does not require one (`SKILL.md` Section 1).
 
 ```text
 features/
-  auth/
+  auth/                     ← One use case: signing in
     ui/
       LoginForm.tsx
-      RegisterForm.tsx
     model/
-      auth.ts               ← Auth state + logic
+      auth.ts               ← Session state + logic
     api/
       login.ts
+    index.ts
+  register/                 ← A separate use case, not a segment of auth
+    ui/
+      RegisterForm.tsx
+    model/
+      register.ts
+    api/
       register.ts
     index.ts
   add-to-cart/
@@ -290,7 +299,9 @@ export const PostCard = ({ post }) => (
 
 ## Entities layer
 
-Reusable business domain models. **Create only when used in 2+ places. Starting
+Reusable business domain models. Create an entity when domain logic or
+state is already reused across consumers, has a focused responsibility,
+and needs one authoritative home (`SKILL.md` Section 1). **Starting
 without this layer is completely valid.**
 
 ```text
@@ -472,7 +483,7 @@ grouping criterion.
 
 - Names alone are enough for quick navigation.
 - There is no natural grouping criterion.
-- Only two or three slices would end up in the group.
+- The group would hold too few slices to make the layer easier to scan.
 
 ### Example: grouping payment-related entities
 
@@ -509,28 +520,31 @@ entities and lack a natural grouping criterion. A group like
 helpers) until it stops being a navigation aid and starts acting as the
 home for the entire cart domain, which weakens the principle that
 features are split by use case. Before grouping features, check that the
-group contains only feature slices and that two or three slices is not the
-entire content.
+group contains only feature slices and that the grouping earns its keep in
+navigation.
 
 ### Anti-patterns
 
 - **Do not put `index.ts` on the group folder.** That promotes the group
   to a slice and breaks the layer's contract.
 - **Do not put shared `utils.ts`, `constants.ts`, or `types.ts` files
-  inside the group.** A slice group has no shared code. Extract reusable
-  code to `shared/` instead. If the layer is `entities` and the shared
+  inside the group.** A slice group has no shared code. Move reusable
+  infrastructure to `shared/`. If the layer is `entities` and the shared
   logic is genuinely domain logic, consider whether the boundaries are
   too granular and the slices should be merged into one isolated entity
   (see `references/excessive-entities.md`). The `@x` notation does not
   apply to slice groups. It is a cross-import surface between entity
   slices, not a sharing mechanism for siblings within a group.
-- **Do not relax slice isolation inside the group.** If two slices in the
-  same group need to share code, extract it one layer down rather than
-  adding a `_common/` file.
+- **Do not relax slice isolation inside the group.** Grouping is
+  navigation; it creates no sharing boundary. Siblings that need to depend
+  on each other are resolved the same way as ungrouped slices, through
+  `references/cross-import-patterns.md`, not with a `_common/` file.
 
 ## Path aliases
 
-Configure path aliases so imports follow the `@/layer/slice` pattern:
+Configure path aliases so imports follow the `@/layer/slice` pattern. Add
+an entry only for a layer the project actually has; an alias for a layer
+that does not exist invites someone to fill it.
 
 ```json
 // tsconfig.json
