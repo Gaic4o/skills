@@ -10,12 +10,14 @@ case, not by type, and keep them next to the code that uses them.
 
 ## Decision tree
 
-1. **Used by exactly one slice?** Keep the asset inside that slice, usually
-   in the `ui/` segment, or in `model/` if it is part of business logic.
-2. **Reused across the app (icons, placeholder images)?** Move to
-   `shared/ui/`.
-3. **Global stylesheet, font, or app-level resource?** Place in the `app/`
-   layer (`app/styles/`, `app/fonts/`).
+1. **Used by one slice?** Keep the asset inside that slice, usually in the
+   `ui/` segment, or in `model/` if it is part of business logic.
+2. **Must several consumers share one authoritative copy (a logo, the
+   placeholder icon)?** Put it with the shared module that owns it, which
+   for a presentation asset is `shared/ui/`. Two assets that merely look
+   alike today and will change for their own reasons stay local.
+3. **Global stylesheet, font, or app-level resource?** Place it in the
+   `app/` layer, by convention `app/styles/` and `app/fonts/`.
 4. **Served as-is by the bundler (favicon, robots.txt)?** Use the framework's
    `public/` folder. The `public/` folder is not part of FSD and does not
    conflict with FSD layers.
@@ -69,9 +71,10 @@ that logic.
 
 ## Shared assets
 
-When the same asset appears across multiple slices, move it to `shared/ui/`.
-Place reusable images in a topical subfolder, or place a single asset next to
-the shared component that uses it:
+When several slices must share one authoritative copy of an asset, move it
+out of the slices. A presentation asset goes to `shared/ui/`, in a topical
+subfolder or next to the single shared component that uses it; anything
+else goes with the shared module that owns it:
 
 ```text
 shared/
@@ -103,18 +106,28 @@ app/
 ```
 
 Theme variables, CSS resets, and font registrations are app-wide concerns.
+`styles/` and `fonts/` are conventional App folder names, not standardized
+ones; `references/layer-structure.md` covers how App segments are named.
 
 ## Public folder
 
 Most bundlers expose a `public/` folder at the project root. Files here are
 served as-is, without bundling or hashing.
 
-- Vite, Next.js, Nuxt: `public/` at the project root.
-- Astro: `public/` at the project root (path is fixed and cannot be changed).
+The default is `public/` at the project root in Vite, Next.js, Nuxt, and
+Astro. Whether it can be moved is framework-specific: Vite and Astro both
+expose a `publicDir` option, while Next.js documents the project root.
 
 `public/` is not part of FSD. It does not collide with FSD layers and does
 not need to live under `src/`. Use it for files that must be served at fixed
-URLs: favicon, `robots.txt`, `sitemap.xml`, OG images, and similar.
+URLs: favicon, `robots.txt`, `sitemap.xml`, OG images, and similar. A few of
+these have framework conventions of their own, such as Next.js metadata
+files, and those win over the generic rule.
+
+> **Where this comes from.** The official assets guide says Astro has no
+> option to move its public folder. Astro documents `publicDir` with a
+> default of `./public` and an example of changing it, so this section
+> follows the framework.
 
 ```text
 public/
@@ -127,8 +140,9 @@ src/
   shared/
 ```
 
-Some projects keep a project-local `app/public/` folder when the bundler
-allows assets to live alongside the entrypoint. Both layouts are valid.
+A bundler whose public directory is configurable, such as Vite, can point
+it at a project-local folder next to the entrypoint. That is a config
+choice for that project, not a layout to reach for by default.
 
 ## Summary table
 
@@ -139,8 +153,8 @@ allows assets to live alongside the entrypoint. Both layouts are valid.
 | Icon reused across the app             | `shared/ui/` (topical subfolder if many)  |
 | Icon used by exactly one shared kit UI | Next to that component in `shared/ui/`    |
 | Global CSS reset, theme variables      | `app/styles/`                             |
-| Web fonts                              | `app/fonts/`, `public/`, or `app/public/` |
-| Favicon, robots.txt, sitemap           | `public/` (or `app/public/`)              |
+| Web fonts                              | App layer when bundled, else public dir   |
+| Favicon, robots.txt, sitemap           | Framework convention, else public dir     |
 
 ## Anti-patterns
 
