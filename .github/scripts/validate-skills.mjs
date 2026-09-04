@@ -144,24 +144,44 @@ function findSkillDirectories() {
 // The routing section as a [start, end) line range, or null when the skill
 // has no such section. Scoping the mention set to this range is what makes
 // a reference named only in passing prose count as unrouted.
+//
+// Fenced lines are skipped at both ends: a `# comment` inside a fenced
+// example is not the next heading, and a heading shown inside a fenced
+// example is not the section.
 function findRoutingSection(lines) {
-  const start = lines.findIndex((line) => ROUTING_SECTION_PATTERN.test(line));
+  let inFence = false;
+  let start = -1;
+  let depth = 0;
 
-  if (start === -1) {
-    return null;
-  }
+  for (const [index, line] of lines.entries()) {
+    if (/^\s*```/.test(line)) {
+      inFence = !inFence;
+      continue;
+    }
 
-  const depth = ROUTING_SECTION_PATTERN.exec(lines[start])[1].length;
+    if (inFence) {
+      continue;
+    }
 
-  for (let index = start + 1; index < lines.length; index += 1) {
-    const heading = /^(#{1,6})\s+/.exec(lines[index]);
+    if (start === -1) {
+      const opening = ROUTING_SECTION_PATTERN.exec(line);
+
+      if (opening !== null) {
+        start = index;
+        depth = opening[1].length;
+      }
+
+      continue;
+    }
+
+    const heading = /^(#{1,6})\s+/.exec(line);
 
     if (heading !== null && heading[1].length <= depth) {
       return [start, index];
     }
   }
 
-  return [start, lines.length];
+  return start === -1 ? null : [start, lines.length];
 }
 
 function inSection(range, index) {

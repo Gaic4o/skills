@@ -173,6 +173,32 @@ test("a skill with no routing section falls back to any mention", () => {
   assert.deepEqual(problems, []);
 });
 
+// Both ends of the routing section ignore fenced lines, so a code example
+// can neither cut the section short nor impersonate its heading.
+test("a fenced comment inside the routing section does not end it", () => {
+  const problems = problemsAfter((dir) =>
+    replaceIn(
+      dir,
+      SKILL,
+      "- **When resolving cross-import issues**",
+      "```bash\n# install the CLI first\nnpx skills add .\n```\n\n- **When resolving cross-import issues**",
+    ),
+  );
+  assert.deepEqual(problems, []);
+});
+
+test("a routing heading shown inside a fence is not the section", () => {
+  const problems = problemsAfter((dir) =>
+    replaceIn(
+      dir,
+      SKILL,
+      "## 1. Core philosophy & layer overview",
+      "```markdown\n## Conditional references\n```\n\n## 1. Core philosophy & layer overview",
+    ),
+  );
+  assert.deepEqual(problems, []);
+});
+
 test("a SKILL.md body at the line limit is reported", () => {
   const problems = problemsAfter((dir) =>
     appendTo(dir, SKILL, "\nPadding.\n".repeat(10)),
