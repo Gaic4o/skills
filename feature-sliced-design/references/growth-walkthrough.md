@@ -4,8 +4,10 @@ One small shop through four snapshots, showing which moments earn a layer
 and which do not. Read it when starting a project, or when deciding
 whether entities are needed yet. Each snapshot gives the tree, what
 changed in the product, and which rule from `SKILL.md` decided the
-response. Not every product change earns a layer: a layer is earned by a
-rule that needs one home, not by a count of how many places use something.
+response. Every decision here comes from `SKILL.md`; this file adds no
+placement rules of its own. Not every product change earns a layer: a
+layer is earned by a rule that needs one home, not by a count of how
+many places use something.
 
 ## Snapshot 0: two pages, three layers
 
