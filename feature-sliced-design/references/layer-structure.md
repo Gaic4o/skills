@@ -243,7 +243,7 @@ its own does not require one (`SKILL.md` Section 1).
 
 ```text
 features/
-  auth/                     ← One use case: signing in
+  auth/                     ← Signing in
     ui/
       LoginForm.tsx
     model/
@@ -251,7 +251,7 @@ features/
     api/
       login.ts
     index.ts
-  register/                 ← A separate use case, not a segment of auth
+  register/                 ← Signing up, a separate use case
     ui/
       RegisterForm.tsx
     model/
@@ -336,8 +336,11 @@ shared/
   api/               ← API client, route constants, CRUD helpers, base types
   auth/              ← Auth tokens, login utilities, session management
   config/            ← Environment variables, app settings
-  assets/            ← Branding assets shared across the app (use sparingly)
 ```
+
+There is no `assets/` segment here. Assets live with the code that uses
+them, and a shared presentation asset goes to `shared/ui/` with the
+component that owns it (`references/asset-handling.md`).
 
 The official API requests guide groups request functions under
 `shared/api/endpoints/` and re-exports them from `shared/api/index.ts`.
@@ -418,8 +421,8 @@ new custom segments.
 
 ### Domain-based file naming
 
-Within a segment, name files after the business domain, not the technical
-role:
+Within a segment, name files after what they are for, the concern or
+domain they serve, not after their technical mechanism:
 
 ```text
 // BAD: technical-role naming mixes domains
@@ -555,14 +558,14 @@ that does not exist invites someone to fill it.
     "paths": {
       "@/app/*": ["src/app/*"],
       "@/pages/*": ["src/pages/*"],
-      "@/widgets/*": ["src/widgets/*"],
-      "@/features/*": ["src/features/*"],
-      "@/entities/*": ["src/entities/*"],
       "@/shared/*": ["src/shared/*"]
     }
   }
 }
 ```
+
+That is the three-layer project from Section 5-3. Add `@/features/*`,
+`@/entities/*`, or `@/widgets/*` when those layers appear, not before.
 
 For framework-specific alias configuration (Vite, Next.js, Nuxt, Astro),
 see `references/framework-integration.md`.
