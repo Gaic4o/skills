@@ -13,7 +13,7 @@
     {
       "id": "small-project-entities",
       "prompt": "I am starting a project with two pages. Should I create the entities and features layers now?",
-      "expect": "No. app/ + pages/ + shared/ is valid FSD. Add layers when reuse is real.",
+      "expect": "No. app/ + pages/ + shared/ is valid FSD. Add entities or features only when a shared responsibility has a stable boundary its consumers must agree on; reuse alone does not require a layer.",
       "why": "This is the single most reported community complaint: small projects split into every layer up front.",
       "source": "feature-sliced-design/SKILL.md",
       "rule": "Section 5-2 'Start without entities'; Section 5-3"
@@ -37,7 +37,7 @@
     {
       "id": "same-layer-import",
       "prompt": "features/profile needs something from features/auth. Is that allowed?",
-      "expect": "Prefer strategies A to C. If truly unavoidable, only through the other slice's public API, never its internals.",
+      "expect": "Generally no. Try strategies A to C first. If the documented last resort is genuinely necessary, import only through the other slice's public API, never its internals.",
       "why": "The MUST rule reads as an absolute ban; the documented escape hatch must stay reachable.",
       "source": "feature-sliced-design/references/cross-import-patterns.md",
       "rule": "Strategy D; SKILL.md Rules 4-1 and 4-3"
@@ -45,8 +45,8 @@
     {
       "id": "shared-ui-import",
       "prompt": "How do I import the Button from the shared UI kit?",
-      "expect": "@/shared/ui/Button, the component folder's own index. Not @/shared/ui/Button/Button.tsx.",
-      "why": "Per-component public APIs in shared/ui and shared/lib are permitted; reaching past the index is not.",
+      "expect": "Through the Shared UI public API: @/shared/ui when the segment index exports Button, or @/shared/ui/Button when Button has been given its own index. Never an internal file such as @/shared/ui/Button/Button.tsx.",
+      "why": "Rule 4-2 makes the segment index the default and a per-component index the fallback for tree-shaking, so both imports are correct and only reaching past the boundary is not.",
       "source": "feature-sliced-design/SKILL.md",
       "rule": "Rule 4-2"
     },
@@ -60,7 +60,7 @@
     },
     {
       "id": "new-project-three-pages",
-      "prompt": "Set up an FSD structure for a shop with a home page, a product page, and a search page.",
+      "prompt": "Set up an FSD structure for a shop with a home page, a product page, and a search page. All three read product data from the backend.",
       "expect": "app/, pages/ with three slices, shared/. No entities or features. Product DTO and requests in shared/api.",
       "why": "The finished-structure reflex. Fails if any layer beyond three appears unprompted.",
       "source": "feature-sliced-design/references/growth-walkthrough.md",
@@ -77,7 +77,7 @@
     {
       "id": "app-header-placement",
       "prompt": "New project. Where does the app-wide header with navigation and the user menu go?",
-      "expect": "app/, as an application-level layout. Not a new widgets/ slice. A section used by one page stays in that page.",
+      "expect": "The header composition goes in app/ as an application-level layout, not a new widgets/ slice. Pieces inside it still come from lower layers: a reused action from features, domain UI from entities, context-free UI from shared. A section used by one page stays in that page.",
       "why": "The header is the textbook widgets example. Placement is decided by scope, and the skill discourages opening widgets for it.",
       "source": "feature-sliced-design/references/layer-structure.md",
       "rule": "Where should layouts be placed?; SKILL.md Section 1 widgets callout"
@@ -85,7 +85,7 @@
     {
       "id": "top-level-assets-segment",
       "prompt": "Should I create src/assets/ to hold all the images and icons?",
-      "expect": "No. Keep an asset next to the slice that uses it. App-wide icons go to shared/ui, global fonts and styles to app/, bundler-served files to public/.",
+      "expect": "No. Keep an asset with the slice that owns it. A presentation asset several slices must share goes to the shared UI module that owns it, global styles and imported fonts go with app-level code, and files served as-is go in the framework's configured public directory.",
       "why": "A type-based assets folder is the common default and the official guidance calls it not recommended.",
       "source": "feature-sliced-design/references/asset-handling.md",
       "rule": "Caution; Decision tree"
@@ -99,20 +99,44 @@
       "rule": "Next.js; Projects on the previously recommended pattern"
     },
     {
-      "id": "phase-out-widgets",
-      "prompt": "Our FSD 2.0 project has a widgets layer. We are moving to 2.1. What happens to it?",
-      "expect": "Nothing has to. Widgets is discouraged for new adoption, not deprecated, so an existing layer stays valid and keeps working; only processes/ is deprecated in 2.1. If the team chooses to align, route each widget by responsibility: one-page use inlines into that page, a reused action goes to features, context-free UI to shared/ui, the app shell to app, a composition of features to the page or route layout.",
-      "why": "Discouraged is not deprecated, and the guide calls this migration optional. The reader most likely arrived from 2.0 already using widgets.",
+      "id": "widgets-not-deprecated",
+      "prompt": "Our FSD 2.0 project already uses widgets. Does 2.1 require us to remove the layer?",
+      "expect": "No. Widgets are discouraged for new adoption, not deprecated, so an existing layer stays valid and keeps working. processes/ is the layer 2.1 deprecates. Phasing widgets out is optional.",
+      "why": "Discouraged is not deprecated. The reader most likely arrived from 2.0 already using widgets, and the guide calls this migration optional.",
       "source": "feature-sliced-design/references/migration-guide.md",
       "rule": "Phasing out a small widgets layer (optional); SKILL.md Section 1 widgets callout"
+    },
+    {
+      "id": "phase-out-widget-placement",
+      "prompt": "We decided to remove our small widgets layer. We have an app shell, a section only one page renders, an action reused on several pages, and a generic UI block. Where does each go?",
+      "expect": "App shell to app; the one-page section inlines into that page; the reused action and its UI to features; the context-free UI block to shared/ui. A widget that only composes features moves up to the page or the route layout.",
+      "why": "Splits the routing table off the deprecated-versus-discouraged question so a failure says which half is wrong.",
+      "source": "feature-sliced-design/references/migration-guide.md",
+      "rule": "Phasing out a small widgets layer (optional)"
     },
     {
       "id": "entity-selector-root-state",
       "prompt": "In entities/todo/model/todo.ts I am writing selectTodos. RootState is exported from app/providers/store.ts. How do I type the selector?",
       "expect": "Type it against only the state it reads, e.g. (state: { todos: TodoState }) => state.todos.items. Must not import RootState from app/: entities cannot depend on a higher layer. Type against RootState at the app layer if that guarantee is needed.",
-      "why": "6ffafa5 fixed this exact mistake in the skill's own example. Every Redux tutorial types selectors with RootState, so an agent will reach for it unless the rule is concrete.",
+      "why": "Regression case: the skill's own example once made this upward import. Redux tutorials type selectors with RootState, so an agent reaches for it unless the dependency rule is spelled out.",
       "source": "feature-sliced-design/references/state-management.md",
       "rule": "Business-entity slice in entities; SKILL.md Rule 4-1"
+    },
+    {
+      "id": "similar-product-cards",
+      "prompt": "Home and search both render a ProductCard. The home card shows a recommendation reason, the search card shows a query-match snippet. Should I extract ProductCard to entities/product/ui?",
+      "expect": "No, not because both pages have one. They are not the same component, they change for their own reasons, and separate page-local copies are valid. Extract only if the two must agree and need one home.",
+      "why": "The whole skill decides extraction on a shared responsibility, not on a count or a matching filename, and every other case tests the positive direction.",
+      "source": "feature-sliced-design/references/growth-walkthrough.md",
+      "rule": "Snapshot 1, 'The second card is a copy, not an extraction'"
+    },
+    {
+      "id": "single-use-user-action",
+      "prompt": "Only the checkout page has a coupon form right now. Should I create features/apply-coupon?",
+      "expect": "No, not yet. Keep the form, its request, and its state in the checkout page while it has one consumer. Extract when another consumer appears and the action has to behave the same in both.",
+      "why": "Guards the verb-equals-feature reflex, the features counterpart of small-project-entities, which no case covered.",
+      "source": "feature-sliced-design/SKILL.md",
+      "rule": "Section 2, Step 3; Section 5-1"
     }
   ]
 }
