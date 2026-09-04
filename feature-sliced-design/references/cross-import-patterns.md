@@ -183,65 +183,66 @@ Common Inversion of Control techniques:
 #### Basic composition (React)
 
 ```typescript
-// features/user-profile/index.ts
-export { UserProfilePanel } from "./ui/UserProfilePanel";
-export { UserAvatar } from "./ui/UserAvatar";
+// features/follow-user/index.ts
+export { FollowButton } from "./ui/FollowButton";
 
-// features/activity-feed/index.ts
-export { ActivityFeed } from "./ui/ActivityFeed";
+// features/report-user/index.ts
+export { ReportUserButton } from "./ui/ReportUserButton";
 
-// pages/UserDashboardPage.tsx
-import { UserProfilePanel } from "@/features/user-profile";
-import { ActivityFeed } from "@/features/activity-feed";
+// pages/profile/ui/ProfilePage.tsx
+import { FollowButton } from "@/features/follow-user";
+import { ReportUserButton } from "@/features/report-user";
 
-export const UserDashboardPage = () => (
+export const ProfilePage = ({ userId }) => (
   <div>
-    <UserProfilePanel />
-    <ActivityFeed />
+    <FollowButton userId={userId} />
+    <ReportUserButton userId={userId} />
   </div>
 );
 ```
 
-`features/user-profile` and `features/activity-feed` do not know about each
-other. The page composes them.
+Following and reporting are two user actions that happen to sit on one
+screen. Neither knows the other exists; the page puts them there.
 
 #### Render props (React)
 
-When one feature needs to render content from another, use render props to
-invert the dependency:
+When one feature's UI has to place another feature's control inside it,
+use a render prop to invert the dependency:
 
 ```typescript
-// features/comment-list/ui/CommentList.tsx
-interface CommentListProps {
-  comments: Comment[];
-  renderUserAvatar?: (userId: string) => React.ReactNode;
+// features/manage-wishlist/ui/WishlistItems.tsx
+// RemoveButton is this feature's own ui/, not a cross-import.
+interface WishlistItemsProps {
+  items: WishlistItem[];
+  renderAddToCart?: (productId: string) => React.ReactNode;
 }
 
-export const CommentList = ({ comments, renderUserAvatar }: CommentListProps) => (
+export const WishlistItems = ({ items, renderAddToCart }: WishlistItemsProps) => (
   <ul>
-    {comments.map((comment) => (
-      <li key={comment.id}>
-        {renderUserAvatar?.(comment.userId)}
-        <span>{comment.text}</span>
+    {items.map((item) => (
+      <li key={item.id}>
+        <span>{item.title}</span>
+        <RemoveButton itemId={item.id} />
+        {renderAddToCart?.(item.productId)}
       </li>
     ))}
   </ul>
 );
 
-// pages/PostPage.tsx
-import { CommentList } from "@/features/comment-list";
-import { UserAvatar } from "@/features/user-profile";
+// pages/wishlist/ui/WishlistPage.tsx
+import { WishlistItems } from "@/features/manage-wishlist";
+import { AddToCartButton } from "@/features/add-to-cart";
 
-export const PostPage = () => (
-  <CommentList
-    comments={comments}
-    renderUserAvatar={(userId) => <UserAvatar userId={userId} />}
+export const WishlistPage = () => (
+  <WishlistItems
+    items={items}
+    renderAddToCart={(productId) => <AddToCartButton productId={productId} />}
   />
 );
 ```
 
-`CommentList` does not import from `user-profile`. The page injects the
-avatar component.
+`manage-wishlist` never imports `add-to-cart`. It leaves a hole per row,
+and the page fills it.
 
 #### Slots (Vue)
 
@@ -249,32 +250,32 @@ Vue's slot system provides a natural way to compose features without
 cross-imports:
 
 ```vue
-<!-- features/comment-list/ui/CommentList.vue -->
+<!-- features/manage-wishlist/ui/WishlistItems.vue -->
 <script setup lang="ts">
-defineProps<{ comments: Comment[] }>();
+defineProps<{ items: WishlistItem[] }>();
 </script>
 
 <template>
   <ul>
-    <li v-for="comment in comments" :key="comment.id">
-      <slot name="avatar" :userId="comment.userId" />
-      <span>{{ comment.text }}</span>
+    <li v-for="item in items" :key="item.id">
+      <span>{{ item.title }}</span>
+      <slot name="add-to-cart" :productId="item.productId" />
     </li>
   </ul>
 </template>
 
-<!-- pages/PostPage.vue -->
+<!-- pages/wishlist/ui/WishlistPage.vue -->
 <script setup lang="ts">
-import { CommentList } from "@/features/comment-list";
-import { UserAvatar } from "@/features/user-profile";
+import { WishlistItems } from "@/features/manage-wishlist";
+import { AddToCartButton } from "@/features/add-to-cart";
 </script>
 
 <template>
-  <CommentList :comments="comments">
-    <template #avatar="{ userId }">
-      <UserAvatar :userId="userId" />
+  <WishlistItems :items="items">
+    <template #add-to-cart="{ productId }">
+      <AddToCartButton :productId="productId" />
     </template>
-  </CommentList>
+  </WishlistItems>
 </template>
 ```
 
