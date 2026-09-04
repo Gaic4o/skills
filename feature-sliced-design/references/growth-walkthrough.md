@@ -24,16 +24,18 @@ src/
     home/
       ui/HomePage.tsx
       ui/ProductCard.tsx        ← list card, used only here
+      api/fetch-products.ts     ← one consumer: this page
       index.ts
     product/
       ui/ProductPage.tsx
       ui/SaleBadge.tsx          ← badge, used only here
       model/is-on-sale.ts       ← the rule: price < listPrice
+      api/fetch-product.ts      ← one consumer: this page
       index.ts
   shared/
     api/
       client.ts
-      endpoints/product.ts      ← ProductDTO, fetchProduct, fetchProducts
+      product.ts                ← ProductDTO, read by both pages
       index.ts
     ui/
       Button/
@@ -41,11 +43,12 @@ src/
 ```
 
 **What is absent on purpose.** No `entities/`, no `features/`, no
-`widgets/`. The product DTO and its request functions sit in `shared/api`
-because knowing a URL and a response shape is infrastructure, not a
-product rule (Section 2, Step 2). The sale rule sits in the product page
-because only that page applies it (Step 1). This is complete, valid FSD
-(Section 5-3).
+`widgets/`. Each request has one consumer, so it sits in that page's
+`api/` segment: Question 1 of the request placement rule is asked before
+Question 2 (`references/auth-and-api.md`). `ProductDTO` is in
+`shared/api` because both pages read the same transport shape. The sale
+rule sits in the product page because only that page applies it (Step 1).
+This is complete, valid FSD (Section 5-3).
 
 ## Snapshot 1: a third page reuses product data, no layer appears
 
@@ -54,21 +57,28 @@ marks the ones on sale.
 
 ```text
   pages/
+    home/
+      index.ts                  ← api/fetch-products.ts moved out
     search/                     ← new slice
       ui/SearchPage.tsx
       ui/ProductCard.tsx        ← a second card, copied from home
       model/is-on-sale.ts       ← a second copy of the rule, from product
       index.ts
+  shared/
+    api/
+      product.ts                ← ProductDTO, and now fetchProducts
 ```
 
-**What the search page needs, it already has.** `ProductDTO` and
-`fetchProducts` come from `@/shared/api`, which was their home from the
-start. Three pages now read the same product data and that changes
-nothing: request functions and response types stay in `shared/api` no
-matter how many slices call them (`references/auth-and-api.md`, request
-placement rule, Question 2). The official API requests guide says the
-same: avoid placing API calls and response types in `entities`
-prematurely.
+**The request moved down, and no layer opened.** `fetchProducts` has two
+consumers now, so Question 1 stops keeping it in the home page.
+Question 2 asks whether it carries domain rules, and a URL with a
+response shape is not a rule, so it lands in `shared/api` next to the
+DTO. Note where it did not land: `entities/product/api` was never a
+candidate, and the official API requests guide warns against putting
+requests there prematurely. Moving code down a layer is not the same as
+opening one.
+
+`fetchProduct` did not move. The detail page is still its only consumer.
 
 **The second card is a copy, not an extraction.** Two `ProductCard`
 files look like a signal for `entities/product/ui`. They are not, yet.
@@ -80,8 +90,9 @@ would force two cards that want to differ into one component that has to
 serve both.
 
 **The rule is copied too.** The search card marks sale items, so
-`is-on-sale.ts` is copied out of the product page. Two copies of a
-two-line rule are cheap, and so far nothing forces them to disagree. A
+`is-on-sale.ts` is copied out of the product page. Keeping both copies
+local is still cheaper than committing to a shared boundary before the
+two consumers are required to agree, and so far nothing requires it. A
 second copy is not a boundary on its own. What turns one into a boundary
 is the subject of Snapshot 2.
 
@@ -163,7 +174,7 @@ says not to reach for it.
 | Moment | Trigger | Response | Rule |
 | --- | --- | --- | --- |
 | 0 | Two pages | `app/`, `pages/`, `shared/` | Section 5-3 |
-| 1 | Third page reads product data | No layer; copy the card and rule | Step 1, Step 2 |
+| 1 | Third page reads product data | No layer; `fetchProducts` moves to `shared/api` | Question 1, Question 2 |
 | 2 | Same rule, two copies, one stale | `entities/product/model` | Section 1, Step 4 |
 | 3 | Same complete action on two pages | `features/add-to-cart` | Step 3 |
 
