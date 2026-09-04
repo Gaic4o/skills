@@ -239,7 +239,7 @@ route configuration.
 Independent, reusable user interactions. Create a feature when an
 interaction is already reused across consumers, has a focused
 responsibility, and needs one shared implementation. A second consumer on
-its own does not require one (`SKILL.md` Section 1).
+its own does not require one (the extraction rule in `SKILL.md`).
 
 ```text
 features/
@@ -301,8 +301,8 @@ export const PostCard = ({ post }) => (
 
 Reusable business domain models. Create an entity when domain logic or
 state is already reused across consumers, has a focused responsibility,
-and needs one authoritative home (`SKILL.md` Section 1). **Starting
-without this layer is completely valid.**
+and needs one authoritative home (the extraction rule in `SKILL.md`).
+**Starting without this layer is completely valid.**
 
 ```text
 // Minimal entity: model only (most common form)

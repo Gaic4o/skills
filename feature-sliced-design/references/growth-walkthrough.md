@@ -104,7 +104,7 @@ copy in the search page, made in Snapshot 1, is not. Search now marks
 items on sale that the detail page says are not.
 
 This is the signal. The two copies are the same rule, they must agree,
-and they no longer do. Check the three conditions in Section 1:
+and they no longer do. Check the extraction rule (`SKILL.md`, Section 1):
 
 1. The same code is used in multiple places right now. Yes, two pages.
 2. It has a reason to change that is independent of any one consumer.
@@ -182,7 +182,7 @@ one, and the callout in Section 1 says not to reach for it.
 | --- | --- | --- | --- |
 | 0 | Two pages | `app/`, `pages/`, `shared/` | Section 5-3 |
 | 1 | Third page reads product data | No layer; `fetchProducts` moves to `shared/api` | Question 1, Question 2 |
-| 2 | Same rule, two copies, one stale | `entities/product/model` | Section 1, Step 4 |
+| 2 | Same rule, two copies, one stale | `entities/product/model` | The extraction rule, Step 4 |
 | 3 | Same complete action on two pages | `features/add-to-cart` | Step 3 |
 
 Reuse alone opened no layer. A domain rule that had to stay consistent

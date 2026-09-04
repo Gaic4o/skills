@@ -25,11 +25,17 @@ description: >
 
 FSD v2.1 core principle: **"Start simple, extract when needed."**
 
-Place code in `pages/` first. Duplication across pages is acceptable and does
-not automatically require extraction to a lower layer. Extract only when the
-same code is currently being used in multiple places (not hypothetically),
-it has a reason to change that is independent of any one consumer, and the
-boundary has a focused responsibility.
+### The extraction rule
+
+Place code in `pages/` first. Duplication across pages is acceptable and
+does not by itself require extraction to a lower layer. Extract only when
+all three conditions hold:
+
+1. The same code is used in multiple places right now, not hypothetically.
+2. It has a reason to change that is independent of any one consumer.
+3. The boundary has a focused responsibility.
+
+### The six layers
 
 **Not all layers are required.** Most projects can start with only `shared/`,
 `pages/`, and `app/`. Add `features/` and `entities/` only when they provide
@@ -68,9 +74,11 @@ can keep using them as before.
 
 See `references/layer-structure.md` for details and layout placement.
 
-**Import rule**: A module may only import from layers strictly below it.
-Cross-imports between slices on the same layer are forbidden, with one
-narrow exception in Section 7.
+### The import rule
+
+A module may only import from layers strictly below it. Cross-imports
+between slices on the same layer are forbidden, with one narrow exception
+in Section 7.
 
 ```typescript
 // Allowed
@@ -131,8 +139,8 @@ a focused responsibility and a reason to change of its own?**
 
 - Global providers, router, theme → `app/`
 
-**Golden Rule: When in doubt, keep it in `pages/`. Extract only when all
-three conditions in Section 1 hold.**
+**Golden Rule: When in doubt, keep it in `pages/`. Extract only when the
+extraction rule holds.**
 
 ## 3. Quick placement table
 
@@ -148,8 +156,8 @@ three conditions in Section 1 hold.**
 | Modal content              | `pages/[page]/ui/SomeModal.tsx`             |                                       |
 | Date formatting util       |                                             | `shared/lib/format-date.ts`           |
 
-"Confirmed multi-use" means the three conditions in Section 1 hold, not
-that a second consumer appeared. Two similar copies that keep drifting
+"Confirmed multi-use" means the extraction rule holds, not that a second
+consumer appeared. Two similar copies that keep drifting
 apart stay in their pages (`references/growth-walkthrough.md`,
 Snapshot 1).
 
@@ -255,9 +263,9 @@ threshold should be high.
 
 **Evolution pattern:** Start with everything in `pages/profile/`. Extract
 the shared model to `entities/user/` when a second page consumes it *and*
-the three conditions in Section 1 hold. A response type that several pages
-read is not one of those cases: it stays in `shared/api`. Keep
-page-specific API calls and UI in the page.
+the extraction rule holds. A response type that several pages read is not
+one of those cases: it stays in `shared/api`. Keep page-specific API calls
+and UI in the page.
 
 ### 5-2. Be conservative with entities
 
@@ -267,7 +275,7 @@ from it), so changes propagate widely.
 1. **Start without entities.** `shared/` + `pages/` + `app/` is valid FSD.
    Thin-client apps rarely need entities.
 2. **Do not split slices prematurely.** Keep code in pages. Extract to
-   entities only when the Section 1 conditions hold.
+   entities only when the extraction rule holds.
 3. **Business logic does not automatically require an entity.** Keeping types
    in `shared/api` and logic in the current slice's `model/` segment may
    be sufficient.
