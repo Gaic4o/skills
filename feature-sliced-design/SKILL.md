@@ -21,6 +21,13 @@ description: >
 > **Source**: [fsd.how](https://fsd.how) | Strictness can be adjusted based on
 > project scale and team context.
 
+**How to use this skill.** For placement decisions, start with the decision
+tree in Section 2 and use the placement table in Section 3 as a quick
+reference. To check a structure for violations, use the rules in Section 4.
+To resolve same-layer cross-imports, use Section 7. For task-specific
+guidance, load only the relevant reference files from Section 10; do not
+preload the rest.
+
 ## 1. Core philosophy & layer overview
 
 FSD v2.1 core principle: **"Start simple, extract when needed."**
