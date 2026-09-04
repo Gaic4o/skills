@@ -147,6 +147,11 @@ same code is actively used in multiple places and the boundary is clear.**
 | Modal content              | `pages/[page]/ui/SomeModal.tsx`             |                                       |
 | Date formatting util       |                                             | `shared/lib/format-date.ts`           |
 
+"Confirmed multi-use" means the three conditions in Section 1 hold, not
+that a second consumer appeared. Two similar copies that keep drifting
+apart stay in their pages (`references/growth-walkthrough.md`,
+Snapshot 1).
+
 ## 4. Architectural rules (MUST)
 
 These rules are the foundation of FSD. Violations weaken the architecture.
@@ -244,10 +249,11 @@ threshold should be high.
 - Page-specific business logic and API integrations
 - Code that looks reusable but is simpler to keep local
 
-**Evolution pattern:** Start with everything in `pages/profile/`. When the
-same user data is being consumed by another page (not hypothetically),
-extract the shared model to `entities/user/`. Keep page-specific API calls
-and UI in the page.
+**Evolution pattern:** Start with everything in `pages/profile/`. Extract
+the shared model to `entities/user/` when a second page consumes it *and*
+the three conditions in Section 1 hold. A response type that several pages
+read is not one of those cases: it stays in `shared/api`. Keep
+page-specific API calls and UI in the page.
 
 ### 5-2. Be conservative with entities
 
