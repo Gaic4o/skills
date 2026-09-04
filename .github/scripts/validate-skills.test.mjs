@@ -136,14 +136,41 @@ test("a reference file pointing at a missing sibling is reported", () => {
   assertOneProblemMatching(problems, /references\/gone\.md does not exist/);
 });
 
-test("a reference SKILL.md never mentions is reported as orphaned", () => {
+test("a reference the routing section never names is reported as orphaned", () => {
   const problems = problemsAfter((dir) =>
     writeFileSync(
       path.join(dir, "feature-sliced-design/references/orphan.md"),
       "# Orphan\n",
     ),
   );
-  assertOneProblemMatching(problems, /references\/orphan\.md is never mentioned in SKILL\.md/);
+  assertOneProblemMatching(problems, /references\/orphan\.md is not routed from/);
+});
+
+// The case the checklist used to ask a human to catch: the file is named in
+// the body, so it is not orphaned, but no rule routes a situation to it.
+test("a reference named only outside the routing section is reported", () => {
+  const problems = problemsAfter((dir) => {
+    writeFileSync(
+      path.join(dir, "feature-sliced-design/references/prose-only.md"),
+      "# Prose only\n",
+    );
+    replaceIn(
+      dir,
+      SKILL,
+      "## 10. Conditional references",
+      "The rest is in `references/prose-only.md`.\n\n## 10. Conditional references",
+    );
+  });
+  assertOneProblemMatching(problems, /references\/prose-only\.md is not routed from/);
+});
+
+// The rule degrades rather than misfiring: a skill that organizes its
+// routing differently keeps the older "mentioned anywhere" check.
+test("a skill with no routing section falls back to any mention", () => {
+  const problems = problemsAfter((dir) =>
+    replaceIn(dir, SKILL, "## 10. Conditional references", "## 10. Reference routing"),
+  );
+  assert.deepEqual(problems, []);
 });
 
 test("a SKILL.md body at the line limit is reported", () => {

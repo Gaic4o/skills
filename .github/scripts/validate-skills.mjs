@@ -18,6 +18,10 @@ const SKILL_LINE_LIMIT = 500;
 const NAME_LIMIT = 64;
 const DESCRIPTION_LIMIT = 1024;
 const REFERENCE_PATH_PATTERN = /\breferences\/([A-Za-z0-9._-]+\.md)\b/g;
+// The heading of the section where SKILL.md routes a situation to the
+// reference file that covers it.
+const ROUTING_SECTION_PATTERN =
+  /^(#{1,6})\s+(?:\d+\.\s+)?Conditional references\s*$/i;
 const IS_GITHUB_ACTIONS = process.env.GITHUB_ACTIONS === "true";
 
 // Set by validateRepository for the duration of one run, so the helpers
@@ -137,6 +141,33 @@ function findSkillDirectories() {
   return skillDirectories.sort();
 }
 
+// The routing section as a [start, end) line range, or null when the skill
+// has no such section. Scoping the mention set to this range is what makes
+// a reference named only in passing prose count as unrouted.
+function findRoutingSection(lines) {
+  const start = lines.findIndex((line) => ROUTING_SECTION_PATTERN.test(line));
+
+  if (start === -1) {
+    return null;
+  }
+
+  const depth = ROUTING_SECTION_PATTERN.exec(lines[start])[1].length;
+
+  for (let index = start + 1; index < lines.length; index += 1) {
+    const heading = /^(#{1,6})\s+/.exec(lines[index]);
+
+    if (heading !== null && heading[1].length <= depth) {
+      return [start, index];
+    }
+  }
+
+  return [start, lines.length];
+}
+
+function inSection(range, index) {
+  return range === null || (index >= range[0] && index < range[1]);
+}
+
 function validateSkill(skillDirectory, documentsBySkill) {
   const skillFile = path.join(skillDirectory, "SKILL.md");
   const lines = readLines(skillFile);
@@ -206,6 +237,9 @@ function validateSkill(skillDirectory, documentsBySkill) {
 
   // Every `references/<file>.md` path, wherever it is written, must resolve.
   // SKILL.md routes to the references; the references point at each other.
+  // Only the routing section counts as routing, so a reference the section
+  // forgets is caught even when the body names it somewhere else.
+  const routingSection = findRoutingSection(lines);
   const mentionedInSkill = new Set();
 
   for (const filePath of documentFiles(skillDirectory)) {
@@ -216,7 +250,7 @@ function validateSkill(skillDirectory, documentsBySkill) {
       for (const match of line.matchAll(REFERENCE_PATH_PATTERN)) {
         const referenceName = match[1];
 
-        if (filePath === skillFile) {
+        if (filePath === skillFile && inSection(routingSection, index)) {
           mentionedInSkill.add(referenceName);
         }
 
@@ -237,8 +271,8 @@ function validateSkill(skillDirectory, documentsBySkill) {
     }
   }
 
-  // A reference SKILL.md never names is dead weight: it ships with the
-  // package but no routing rule can reach it.
+  // A reference the routing section never names is dead weight: it ships
+  // with the package but no routing rule can reach it.
   const referencesDirectory = path.join(skillDirectory, "references");
 
   if (statSync(referencesDirectory, { throwIfNoEntry: false })?.isDirectory()) {
@@ -246,7 +280,10 @@ function validateSkill(skillDirectory, documentsBySkill) {
       if (entry.endsWith(".md") && !mentionedInSkill.has(entry)) {
         recordError(
           path.join(referencesDirectory, entry),
-          `references/${entry} is never mentioned in SKILL.md`,
+          routingSection === null
+            ? `references/${entry} is never mentioned in SKILL.md`
+            : `references/${entry} is not routed from the ` +
+              `"Conditional references" section of SKILL.md`,
         );
       }
     }
