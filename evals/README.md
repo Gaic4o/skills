@@ -24,8 +24,9 @@ by hand, or wire `cases.json` into whatever harness you already use.
    the skill alone produces.
 3. Compare the answer to `expect`. Judge the placement, not the wording.
 4. On a mismatch, read the file named in `source` and check whether the rule
-   is absent, ambiguous, or contradicted somewhere else. Fix the document,
-   not the case.
+   is absent, ambiguous, contradicted elsewhere, or whether the case itself
+   no longer describes the behavior the skill intends. Fix whichever one is
+   wrong. Never edit `expect` just to match what the model said.
 
 Start a fresh session per case. A previous answer in the same conversation
 will steer the next one.
@@ -43,10 +44,16 @@ Add an object to `cases` with all six fields:
 | `source` | repo-relative path to the file that decides it |
 | `rule` | the section or rule inside that file |
 
-`source` must point at a file that exists. `node
-.github/scripts/validate-skills.mjs` enforces that, so a case can never
-outlive the passage it cites.
+`source` must point at a file that exists, and `node
+.github/scripts/validate-skills.mjs` enforces that, so no case can cite a
+file that has been deleted. Nothing checks `rule`, so keep it in sync by
+hand when a heading or a rule name changes.
 
-Write a case when a rule was ambiguous enough that two readings were
-defensible. A case that only restates an obvious rule costs a run and catches
-nothing.
+Write a case when it guards a mistake that is actually likely: a rule two
+readings could defend, a regression that has already happened once, or a
+convention from outside FSD that an agent will reach for anyway. Several
+cases here are the third kind, where the rule is plain and the pull toward
+breaking it is what needs holding down.
+
+A case that restates an obvious rule without guarding a realistic mistake
+costs a run and catches nothing.
