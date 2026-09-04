@@ -1,6 +1,6 @@
 # Feature-Sliced Design: Agent Skills
 
-Agent skills that teach AI coding agents [Feature-Sliced Design (FSD)](https://fsd.how) v2.1 architectural methodology.
+Agent skills that teach AI coding agents how to apply the [Feature-Sliced Design (FSD)](https://fsd.how) v2.1 methodology.
 
 ## Installation
 
@@ -14,12 +14,14 @@ npx skills add feature-sliced/skills
 
 Apply FSD v2.1 principles when structuring frontend projects. The agent learns layer hierarchy, import rules, the decision framework for code placement, and common patterns.
 
+Its bias is pages-first: start with `app/`, `pages/`, and `shared/`, and open a features or entities boundary only when a stable shared responsibility has earned one. Code used in two places does not, by itself, earn a layer.
+
 **Use when:**
 
 - Setting up or reorganizing a frontend project structure
-- Deciding where to place code (pages vs. features vs. entities vs. shared)
+- Deciding where code belongs across app, pages, features, entities, and shared
 - Placing static assets (images, icons, fonts, PDFs) in the right slice or layer
-- Grouping closely related slices for navigation as the project grows
+- Grouping closely related slices into slice groups as the project grows
 - Deciding where page layouts belong, or whether to use the widgets layer (discouraged)
 - Resolving cross-import issues or evaluating the @x pattern
 - Deciding whether to create or remove an entity, or whether to skip the entities layer entirely
@@ -34,7 +36,11 @@ Set up FSD project structure with Next.js App Router
 ```
 
 ```text
-Where should I put this auth logic?
+This rule is used on two pages now. Should it become an entity?
+```
+
+```text
+Where should I put auth tokens and session state?
 ```
 
 ```text
@@ -60,9 +66,13 @@ feature-sliced-design/
     framework-integration.md       Next.js, React Router, Nuxt, Vite, Astro setup
     auth-and-api.md                Auth, type definitions, API request handling
     state-management.md            Redux, TanStack Query (React Query)
+
+evals/
+  README.md                        How to run and maintain the cases
+  cases.json                       Placement regression cases
 ```
 
-The agent reads only `SKILL.md` by default. Reference files are loaded on demand based on the task.
+`SKILL.md` is the entry point. It tells the agent to read a reference file only when the task calls for it, so the initial context stays small.
 
 ## Contributing
 
@@ -72,11 +82,11 @@ Run the validator before opening a pull request:
 node .github/scripts/validate-skills.mjs
 ```
 
-It enforces the skill package rules this repository follows, based on the guidance in [vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills) `AGENTS.md`:
+It enforces this repository's skill-package rules, which are based in part on the guidance in [vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills) `AGENTS.md`:
 
 - The `SKILL.md` body stays under 500 lines to keep the initial skill context lightweight. Frontmatter is excluded from the count.
 - The frontmatter `name` matches the skill's directory name.
-- The frontmatter has a `description`.
+- The frontmatter contains a `description`.
 - Every `references/<file>.md` path mentioned in `SKILL.md` resolves to an existing file.
 - Every file under `references/` is mentioned in `SKILL.md`, so no reference is orphaned.
 - `evals/cases.json` is valid JSON with at least one case; every case has `id`, `prompt`, `expect`, `why`, `source`, and `rule`, ids are unique, and every `source` path exists.
