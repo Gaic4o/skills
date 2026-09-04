@@ -28,8 +28,8 @@ FSD v2.1 core principle: **"Start simple, extract when needed."**
 Place code in `pages/` first. Duplication across pages is acceptable and does
 not automatically require extraction to a lower layer. Extract only when the
 same code is currently being used in multiple places (not hypothetically),
-the usages do not always change together, and the boundary has a focused
-responsibility.
+it has a reason to change that is independent of any one consumer, and the
+boundary has a focused responsibility.
 
 **Not all layers are required.** Most projects can start with only `shared/`,
 `pages/`, and `app/`. Add `features/` and `entities/` only when they provide

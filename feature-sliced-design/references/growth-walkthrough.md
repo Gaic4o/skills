@@ -94,8 +94,9 @@ This is the signal. The two copies are the same rule, they must agree,
 and they no longer do. Check the three conditions in Section 1:
 
 1. The same code is used in multiple places right now. Yes, two pages.
-2. The usages do not always change together. Yes: the rule changes when
-   marketing changes it, not when either page changes.
+2. It has a reason to change that is independent of any one consumer.
+   Yes: the rule changes when marketing changes it, not when either page
+   changes.
 3. The boundary has a focused responsibility. Yes: "is this product on
    sale" and nothing else.
 
