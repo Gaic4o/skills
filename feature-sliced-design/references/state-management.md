@@ -14,12 +14,16 @@ Rules 4-1, 4-2, and 4-4 applied to Redux Toolkit.
 
 ### Where a Redux slice belongs
 
-**Business entities** (the things your app works with, like `todo`,
-`product`, `user`) go in the Entities layer; **user actions** (`add-todo`,
-`toggle-todo`, `like-post`) go in Features.
+**Redux does not decide the layer; ownership does.** Work out which slice
+owns the state with Section 2 of `SKILL.md`, then put the Redux code in
+that slice's `model/` segment. A `todo` noun does not make an entity, and
+a `toggle-todo` verb does not make a feature.
 
-In v2.1, also remember the pages-first rule: if the slice is used by a
-single page, keep it in that page's `model/` segment until reuse appears.
+Once a boundary has been earned, Step 6 says where a reused Redux slice
+can go: one that describes a business thing can move to Entities, one
+that describes an action users take can move to Features. Both halves
+assume the slice is already reused across pages. A slice used by a single
+page stays in that page's `model/` segment.
 
 ### Business-entity slice in entities
 
@@ -88,15 +92,17 @@ The slice's public API re-exports what consumers need:
 export { todoReducer, selectTodos, setCompleted, fetchTodos } from "./model/todo";
 ```
 
-**Key:** The entire Redux slice (reducer + selectors + thunks) lives in a
-single domain-named file, not split across `reducers.ts`, `selectors.ts`,
-`thunks.ts`. That technical-role split reduces cohesion and is an
-anti-pattern in FSD.
+**Key:** Do not split Redux code by Redux mechanism into `reducers.ts`,
+`selectors.ts`, and `thunks.ts`. That is the technical-role naming Rule
+4-4 rules out. Keep a reducer, its selectors, and its thunks together in
+one domain-named file, and when the model outgrows it, split by domain
+concern (`todo.ts`, `todo-filter.ts`) rather than by mechanism.
 
 ### User-action slice in features
 
-A user action that orchestrates the entity exposes a hook through its
-public API and consumes the entity's reducer:
+Assuming the action is already reused across pages and has earned a
+feature boundary, it consumes the entity through the entity's public API
+and exposes its own hook through the feature's:
 
 ```typescript
 // features/toggle-todo/model/use-toggle-todo.ts
@@ -140,8 +146,8 @@ This section follows the official React Query guide. Guidance applies to
 
 ### Where to store query keys
 
-Three placements are valid. Choose based on project size and whether the
-project already has an Entities layer.
+Three placements are valid. Choose by project size and by which slice owns
+the request, not by which folders happen to exist.
 
 **Option 1: Flat in `shared/api/queries/`** (small projects, few endpoints):
 
@@ -165,14 +171,25 @@ shared/api/example/
   delete-example.ts
 ```
 
-**Option 3: Per entity in `entities/<entity>/api/`** when each request
-corresponds to a single entity, and the project already has an Entities
-layer. When entities reference each other, see
-`references/cross-import-patterns.md` for `@x` notation as a last resort.
+**Option 3: Per entity in `entities/<entity>/api/`** when the request
+carries domain rules, the entity boundary already exists, and each request
+corresponds to a single entity. Generic CRUD and plain resource access
+stay in `shared/api` however many slices call them (`auth-and-api.md`,
+request placement rule, Question 2). When entities reference each other,
+see `references/cross-import-patterns.md` for `@x` as a last resort.
+
+> **Where this comes from.** Two official guides differ here. The React
+> Query guide calls the per-entity split the cleanest option once a
+> project has entities, and shows CRUD files inside `entities/*/api/`.
+> The excessive-entities guide excludes CRUD from entities and keeps it
+> in `shared/api/endpoints/`. This skill follows the second, and
+> Question 2 is how it decides: an existing entities folder is not by
+> itself a reason to move a request into it.
 
 ### Where to store mutations
 
-Do not mix mutations with queries. Two patterns are accepted:
+Mixing mutations with queries is not recommended. Two patterns are
+accepted:
 
 1. **A mutation hook in the `api/` segment near the place of use.** Use
    `setQueryData` for cache updates:
@@ -290,7 +307,7 @@ export const useUpdatePostTitle = () =>
     mutationFn: ({ id, newTitle }) => apiClient.patch(`/posts/${id}`, { title: newTitle }),
   });
 
-// src/widgets/save-indicator/ui/save-indicator.tsx
+// src/app/ui/save-indicator.tsx   (app-wide; page-local if one page)
 import { useMutationState } from "@tanstack/react-query";
 import { POST_MUTATIONS } from "@/shared/api/post";
 
