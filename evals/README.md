@@ -16,8 +16,9 @@ noticed. A case list is the cheapest way to catch the next one.
 
 ## Running the cases
 
-There is no automated grader in CI, because grading requires a model. Run them
-by hand, or wire `cases.json` into whatever harness you already use.
+There is no semantic grader in CI, because comparing an answer to `expect`
+needs a model or a person. Run them by hand, or wire `cases.json` into
+whatever harness you already use.
 
 1. Start an agent session with only this skill installed.
 2. Send one `prompt` verbatim. Do not add context; the point is to see what
@@ -41,19 +42,24 @@ Add an object to `cases` with all six fields:
 | `prompt` | what the user types, verbatim |
 | `expect` | the placement, plus what must not happen if that matters |
 | `why` | what regression this case guards against |
-| `source` | repo-relative path to the file that decides it |
-| `rule` | the section or rule inside that file |
+| `source` | repo-relative path to the primary file that decides it |
+| `rule` | the section or rule that decides it; name a rule from another file too when the decision leans on one |
 
-`source` must point at a file that exists, and `node
-.github/scripts/validate-skills.mjs` enforces that, so no case can cite a
-file that has been deleted. Nothing checks `rule`, so keep it in sync by
-hand when a heading or a rule name changes.
+`source` names one file, the one to open first on a mismatch, even where
+the decision is settled by more than one passage. It must point at a file
+that exists, and `node .github/scripts/validate-skills.mjs` enforces that,
+so no case can cite a file that has been deleted. Nothing checks `rule`, so
+keep it in sync by hand when a heading or a rule name changes.
 
 Write a case when it guards a mistake that is actually likely: a rule two
 readings could defend, a regression that has already happened once, or a
 convention from outside FSD that an agent will reach for anyway. Several
 cases here are the third kind, where the rule is plain and the pull toward
 breaking it is what needs holding down.
+
+Keep a case on one architectural decision where you can. A prompt that
+checks several independent placements fails as one result, and then the
+failure does not say which rule broke. Split it instead.
 
 A case that restates an obvious rule without guarding a realistic mistake
 costs a run and catches nothing.
