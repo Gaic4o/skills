@@ -141,7 +141,7 @@
     {
       "id": "user-entity-does-not-own-token",
       "prompt": "We now have entities/user because profile identity is reused across the app. Should I move the access and refresh tokens out of shared/auth into entities/user?",
-      "expect": "Not because the entity exists. The official Auth guide accepts a token store in Shared or in a current-user entity, so either can be right, but an entity appearing does not by itself move credential ownership. Keep tokens where their management already lives unless you are deliberately adopting the entity approach and its way of reaching the API client.",
+      "expect": "shared/auth remains the default. Entity-owned credentials are also valid, but only when an already-established user or session entity genuinely owns that authentication state; the entity existing, or profile data being reused, is not enough on its own.",
       "why": "The line between reusable user-domain state and authentication infrastructure moved twice while these references were being aligned, so pin where it landed.",
       "source": "feature-sliced-design/references/auth-and-api.md",
       "rule": "When to use shared/auth vs a user entity"

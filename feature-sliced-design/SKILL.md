@@ -68,18 +68,13 @@ handling. In this case, the responsibilities of Features, which handle user
 flows, and Widgets, which handle UI blocks, can overlap, making the boundary
 between the two layers unclear.
 
-Not creating a widget does not mean simply moving that UI block to another
-layer. Compositions that are specific to a particular screen should stay in
-`pages`. When a user action is reused across multiple pages, both the action
-and the UI composition required to perform it should be extracted into
-`features`. Shared UI without business context should be separated into
-`shared`. UI such as app-wide layouts can be handled in `app`.
+Not creating a widget does not mean moving the block elsewhere untouched.
+A screen-specific composition stays in `pages`; a reused action and the UI
+to perform it go to `features`; context-free UI goes to `shared`; an
+app-wide layout goes to `app`.
 
-This does not mean removing the `widgets/` layer entirely. It means
-recommending against actively adopting it. Projects already using widgets
-can keep using them as before.
-
-See `references/layer-structure.md` for details and layout placement.
+Discouraged is not deprecated: an existing widgets layer stays valid. See
+`references/layer-structure.md` for that case and for layout placement.
 
 ### The import rule
 
@@ -199,14 +194,12 @@ segment (`shared/ui/index.ts`, `shared/api/index.ts`, etc.) rather than
 one top-level `shared/index.ts`. This keeps imports from Shared
 organized by intent.
 
-A segment can hold unrelated modules, `shared/ui` and `shared/lib` most
-often, and one index over all of them can bloat bundles and defeat
-tree-shaking while many index files slow the dev server. When that
-happens, give each component, library, or controller folder its own index
+Where one index over a segment's unrelated modules hurts bundling, give
+each component, library, or controller folder its own index instead
 (`shared/ui/Button/index.ts` as `@/shared/ui/Button`, `shared/api/post/`
-as `@/shared/api/post`). That folder is then the boundary.
-Reaching past it into internals (`@/shared/ui/Button/Button.tsx`) is
-still a violation. See `references/layer-structure.md` for the shape.
+as `@/shared/api/post`). That folder is then the boundary; reaching past
+it (`@/shared/ui/Button/Button.tsx`) is still a violation. See
+`references/layer-structure.md` for the shape.
 
 **Environment-specific entry points:** a slice normally exposes one
 `index.ts`, and ad-hoc variations are not recommended. If a single index
