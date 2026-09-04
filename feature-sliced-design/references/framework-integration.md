@@ -9,11 +9,11 @@ Place FSD layers inside `src/` to avoid naming conflicts with framework
 directories. The FSD `app/` and `pages/` layers are **not** the same as
 framework directories with the same names (e.g., Next.js `app/`).
 
-Examples here import through `@/` pointing at `src/`. Alias setup is a
-tooling choice, not an FSD rule: one `@/*` entry works everywhere, and
-per-layer entries are equally fine. It changes no layer semantics.
-Configure an entry only for a layer the project actually has. Each
-framework section shows the minimum that framework needs.
+Examples here import through `@/` pointing at `src/`. Whether that is one
+root alias or one entry per layer is a tooling choice, not an FSD rule,
+and it changes no layer semantics; how the resolver is wired differs by
+framework, which is what each section below shows. Configure an entry
+only for a layer the project actually has.
 
 The FSD layers inside `src/` keep the standard shape described in
 `references/layer-structure.md`. Each section below shows only what the
@@ -144,6 +144,10 @@ inside the FSD layers. Next.js looks for them in the project root, or in
 Next.js 16 deprecated the `middleware` convention and renamed it `proxy`;
 older projects still use `middleware.ts`.
 
+With the layout above, the Next.js `app/` and `pages/` folders sit at the
+project root, so both files sit there too. The `src/` option applies to
+projects that keep Next.js routing under `src/`, and never means `src/_app/`.
+
 > **Where this comes from.** The official Next.js guide on fsd.how says
 > both files must be in the project root and that Next.js will not find
 > them under `src/`. That matched earlier Next.js versions and is no
@@ -200,13 +204,19 @@ export const config = getExampleData.config;
 export default getExampleData.handler;
 ```
 
-FSD is primarily a frontend methodology. If `api-routes` grows to many
-endpoints, consider moving the backend to a separate package in a monorepo.
+Keep Route Handlers as framework-facing adapters and delegate domain rules
+to the FSD boundary that owns them. FSD is primarily a frontend
+methodology. If `api-routes` grows to many endpoints, consider moving the
+backend to a separate package in a monorepo.
 
 ### Database access
 
 Place database queries in a `db` segment in `shared/` (`src/shared/db/`).
 Co-locate caching and revalidation logic with the queries themselves.
+
+Plain data access is all that goes there. Rule 4-5 does not relax because
+code runs on the server: domain rules and use-case orchestration stay with
+the slice that owns them.
 
 ### Path aliases
 
@@ -218,9 +228,6 @@ Co-locate caching and revalidation logic with the queries themselves.
     "paths": {
       "@/_app/*": ["src/_app/*"],
       "@/_pages/*": ["src/_pages/*"],
-      "@/widgets/*": ["src/widgets/*"],
-      "@/features/*": ["src/features/*"],
-      "@/entities/*": ["src/entities/*"],
       "@/shared/*": ["src/shared/*"]
     }
   }
@@ -243,7 +250,7 @@ errors.
 Split only when this boundary is required. Put server-only exports in
 `index.server.ts`.
 
-## Nuxt 3
+## Nuxt (v3-compatible layout)
 
 Nuxt keeps file routing in `pages/` at the project root, the name FSD
 reserves for the pages layer. The official Nuxt guide resolves this by
@@ -254,8 +261,10 @@ The shape below is a Nuxt 3 project, which is what the official guide
 covers. Nuxt 4 changed the default `srcDir` to `app/` and moves `pages/`,
 `layouts/`, and `components/` under it, so its framework `app/` collides
 with the FSD app layer the way Next.js does. No official FSD guide covers
-that layout yet. A Nuxt 4 project can keep the Nuxt 3 shape, which Nuxt
-still auto-detects, and follow this section.
+that layout yet. A Nuxt 4 project can keep this shape, which Nuxt still
+auto-detects, and follow this section. Nuxt 3 itself reached end of life
+on 31 July 2026, so read the heading as the layout, not the version to
+start on.
 
 ### Directory structure
 
@@ -342,9 +351,6 @@ export default defineConfig({
     alias: {
       "@/app": resolve(__dirname, "src/app"),
       "@/pages": resolve(__dirname, "src/pages"),
-      "@/widgets": resolve(__dirname, "src/widgets"),
-      "@/features": resolve(__dirname, "src/features"),
-      "@/entities": resolve(__dirname, "src/entities"),
       "@/shared": resolve(__dirname, "src/shared"),
     },
   },
@@ -395,8 +401,8 @@ my-router-project/
 
 ### Wiring routes to FSD pages
 
-Route modules stay thin. The component, and any loader or action, come
-from the FSD page's public API.
+Route modules stay thin. They own the framework-required route exports and
+delegate the application work to what the FSD page's public API exposes.
 
 ```typescript
 // app/routes.ts
@@ -464,9 +470,9 @@ my-astro-project/
       home/
         ui/HomePage.astro
         index.ts
-    widgets/
-    features/
-    entities/
+    features/              ← when needed
+    entities/              ← when needed
+    widgets/               ← existing projects that keep the layer
     shared/
 ```
 
@@ -484,8 +490,8 @@ import { HomePage } from '@/_pages/home';
 
 ### Path aliases (tsconfig.json)
 
-Astro projects use a single `@/*` alias instead of one alias per layer. This
-is the convention the FSD Astro guide recommends:
+The official FSD Astro guide uses a single `@/*` alias pointing at `src/*`
+rather than one alias per layer, and this section follows it:
 
 ```json
 {
