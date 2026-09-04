@@ -93,6 +93,12 @@ It enforces this repository's skill-package rules, which are based in part on th
 - A named rule such as "the request placement rule" that is cited from more than one file is a heading or bold label somewhere in the package, so renaming the anchor fails the build instead of stranding its readers.
 - `evals/cases.json` is valid JSON with at least one case; every case has `id`, `prompt`, `expect`, `why`, `source`, and `rule`, ids are unique, every `source` path exists, and every `rule` fragment resolves to a passage of the skill (see `evals/README.md`).
 
+The validator has its own tests, which break one thing at a time in a copy of the repository and assert that it is reported:
+
+```bash
+node --test .github/scripts/validate-skills.test.mjs
+```
+
 ## References
 
 - [fsd.how](https://fsd.how): FSD official documentation
