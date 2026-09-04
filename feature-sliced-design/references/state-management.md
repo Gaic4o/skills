@@ -7,29 +7,44 @@ rules are framework-agnostic.
 
 ## State management: Redux
 
+FSD has no Redux guide of its own. The placement rule below is Step 6 of
+the official `from-custom` migration guide, and the only official Redux
+code is in the business entities guide. The rest of this section is
+Rules 4-1, 4-2, and 4-4 applied to Redux Toolkit.
+
 ### Where a Redux slice belongs
 
-The `from-custom` migration guide draws a clean line: **business
-entities** (the things your app works with, like `todo`, `product`, `user`)
-go in the Entities layer; **user actions** (`add-todo`, `toggle-todo`,
-`like-post`) go in Features.
+**Business entities** (the things your app works with, like `todo`,
+`product`, `user`) go in the Entities layer; **user actions** (`add-todo`,
+`toggle-todo`, `like-post`) go in Features.
 
 In v2.1, also remember the pages-first rule: if the slice is used by a
 single page, keep it in that page's `model/` segment until reuse appears.
 
 ### Business-entity slice in entities
 
+The request is plain resource access, so it lives in `shared/api` with
+its DTO (Request placement rule in `references/auth-and-api.md`). The
+entity imports it; `model/` holds only the Redux wiring.
+
+```typescript
+// shared/api/todo.ts
+import { apiClient } from "./client";
+
+export interface Todo { id: string; title: string; completed: boolean }
+
+export const getTodos = (): Promise<Todo[]> =>
+  apiClient.get("/todos").then((r) => r.data);
+```
+
 ```typescript
 // entities/todo/model/todo.ts
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { apiClient } from "@/shared/api";
+import { getTodos, type Todo } from "@/shared/api";
 
-interface Todo { id: string; title: string; completed: boolean }
 interface TodoState { items: Todo[]; loading: boolean }
 
-export const fetchTodos = createAsyncThunk("todos/fetch", async () =>
-  (await apiClient.get<Todo[]>("/todos")).data,
-);
+export const fetchTodos = createAsyncThunk("todos/fetch", getTodos);
 
 const todoSlice = createSlice({
   name: "todos",
@@ -54,6 +69,12 @@ export const { setCompleted } = todoSlice.actions;
 export const selectTodos = (state: { todos: TodoState }) => state.todos.items;
 export const todoReducer = todoSlice.reducer;
 ```
+
+A thunk that still carries its own request belongs in the `api` segment
+(`references/migration-guide.md`, Part 2 Step 5). Once the request lives
+in `shared/api`, the thunk is only Redux wiring and stays in `model/`
+next to the reducer that handles it, which is the shape of the official
+business entities guide.
 
 The selector takes only the state it reads, not `RootState`. `RootState` is
 declared in `app/`, so an entity importing it would depend on a higher layer
@@ -113,8 +134,9 @@ let individual slices create their own stores.
 
 ## State management: TanStack Query (React Query)
 
-Guidance applies to `@tanstack/react-query` v5 (formerly React Query). The
-package name is `@tanstack/react-query`.
+This section follows the official React Query guide. Guidance applies to
+`@tanstack/react-query` v5 (formerly React Query). The package name is
+`@tanstack/react-query`.
 
 ### Where to store query keys
 
@@ -339,8 +361,3 @@ export const apiClient = new ApiClient(API_URL);
 domain. Page-specific queries stay in the page. Shared queries go in
 `shared/api/` or `entities/<name>/api/` depending on whether the project has
 an Entities layer.
-
-## See also
-
-- [Sample project on GitHub](https://github.com/ruslan4432013/fsd-react-query-example)
-- [Query options API (tkdodo blog)](https://tkdodo.eu/blog/the-query-options-api)

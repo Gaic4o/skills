@@ -129,6 +129,14 @@
       "why": "Discouraged is not deprecated, and the guide calls this migration optional. The reader most likely arrived from 2.0 already using widgets.",
       "source": "feature-sliced-design/references/migration-guide.md",
       "rule": "Phasing out a small widgets layer (optional); SKILL.md Section 1 widgets callout"
+    },
+    {
+      "id": "entity-selector-root-state",
+      "prompt": "In entities/todo/model/todo.ts I am writing selectTodos. RootState is exported from app/providers/store.ts. How do I type the selector?",
+      "expect": "Type it against only the state it reads, e.g. (state: { todos: TodoState }) => state.todos.items. Must not import RootState from app/: entities cannot depend on a higher layer. Type against RootState at the app layer if that guarantee is needed.",
+      "why": "6ffafa5 fixed this exact mistake in the skill's own example. Every Redux tutorial types selectors with RootState, so an agent will reach for it unless the rule is concrete.",
+      "source": "feature-sliced-design/references/state-management.md",
+      "rule": "Business-entity slice in entities; SKILL.md Rule 4-1"
     }
   ]
 }
