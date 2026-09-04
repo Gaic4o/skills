@@ -32,10 +32,14 @@ body:
       options:
         - SKILL.md
         - references/layer-structure.md
+        - references/growth-walkthrough.md
         - references/cross-import-patterns.md
+        - references/excessive-entities.md
+        - references/asset-handling.md
         - references/migration-guide.md
         - references/framework-integration.md
-        - references/practical-examples.md
+        - references/auth-and-api.md
+        - references/state-management.md
         - A new reference file may be needed
         - Not sure
     validations:

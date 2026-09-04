@@ -1,15 +1,20 @@
 # Cross-Import Resolution Patterns
 
-How to resolve cross-imports between slices on the same layer. Cross-imports
-are a code smell, not an absolute prohibition. The strategies below are
-ordered, but the right choice depends on the project context.
+How to resolve cross-imports between slices on the same layer. Rule 4-3
+disallows them by default, so the first move is always to remove the
+dependency by changing a boundary or a composition. Strategies A to C do
+that. Strategy D and `@x` are the documented exceptions for a dependency
+that cannot reasonably be removed, not a second way of working.
+
+Treat a cross-import as a code smell rather than an impossible state:
+some are deliberate, and those should be explicit and rare.
 
 ## What is a cross-import?
 
 A cross-import is an import between different slices within the same layer.
 For example:
 
-- importing `features/product` from `features/cart`
+- importing `features/apply-coupon` from `features/add-to-cart`
 - importing `widgets/sidebar` from `widgets/header`
 
 The `shared` and `app` layers do not have slices, so imports within those
@@ -21,15 +26,15 @@ Cross-imports blur domain boundaries and introduce implicit dependencies.
 Four concrete problems:
 
 1. **Unclear ownership and responsibility.** When `cart` imports from
-   `product`, it becomes unclear which slice owns the shared logic.
-   Changes to `product`'s internal implementation can break `cart`
-   without warning. This makes bugs harder to localize and code harder
-   to reason about.
+   `product`, it becomes unclear which slice owns the shared logic. A
+   change to `product`'s public contract now forces a change in `cart`,
+   and a deep import couples `cart` to `product`'s internals as well.
+   This makes bugs harder to localize and code harder to reason about.
 2. **Reduced isolation and testability.** A core benefit of sliced
-   architecture is that each slice can be developed, tested, and deployed
-   independently. Cross-imports break this isolation. Testing `cart` now
-   requires setting up `product`, and changes in one slice can cause
-   unexpected test failures in another.
+   architecture is that a slice can be read, changed, and tested with
+   little knowledge of its siblings. Cross-imports break that. Testing
+   `cart` now requires setting up `product`, and a change in one slice
+   can fail tests in another.
 3. **Increased cognitive load.** Working on `cart` now requires accounting
    for how `product` is structured. As cross-imports accumulate, tracing
    the impact of a change requires following more code across slice
@@ -99,24 +104,24 @@ project context. Cross-imports here are not always forbidden; they are
 dependencies that should be deliberate. The four strategies below are
 listed in preferred order, but each fits different situations.
 
-### Strategy A: Slice merge
+### Strategy A: slice merge
 
 If two slices are not truly independent and always change together, merge
 them into a single larger slice.
 
 ```text
 // Before: two features that always change together
-features/profile/
-features/profile-settings/
+features/edit-profile/
+features/edit-profile-privacy/
 
 // After: one cohesive feature
-features/profile/
+features/edit-profile/
   ui/
-    Profile.tsx
-    ProfileSettings.tsx
+    EditProfileForm.tsx
+    PrivacyFields.tsx
   model/
-    profile.ts
-    profile-settings.ts
+    edit-profile.ts
+    privacy.ts
   index.ts
 ```
 
@@ -124,46 +129,46 @@ If two slices keep cross-importing each other and effectively move as one
 unit, they are likely one feature in practice. Merging is often the simpler
 and cleaner choice.
 
-### Strategy B: Push shared domain flows down into entities
+### Strategy B: move a shared domain responsibility into an entity
 
-If multiple features share a domain-level flow, move that flow into a domain
-slice inside `entities`. Key principles:
+If multiple features share a domain rule or domain state, move that
+responsibility into the entity that owns it. Key principles:
 
-- `entities` contains domain types and domain logic only.
-- UI remains in `features` and `widgets`.
-- Features import and use the domain logic from `entities`.
+- What moves down is an established domain responsibility, not feature UI
+  or user-flow orchestration.
+- Interaction-specific UI and workflow logic stay in `features`.
+- Features import that responsibility through the entity's public API.
 
-For example, if both `features/auth` and `features/profile` need session
-validation, place session-related domain functions in `entities/session`
-and reuse them from both features.
+For example, if `features/add-to-cart` and `features/buy-now` both need
+the rule for whether a product can be purchased, that rule belongs to the
+product domain, while each button remains its own user action.
 
 ```text
 entities/
-  session/
+  product/
     model/
-      validate-session.ts
-      session.ts
+      can-purchase.ts     ← the shared domain rule
     index.ts
 
 features/
-  auth/
-    ui/LoginForm.tsx
-    model/login.ts        ← imports validateSession from entities/session
+  add-to-cart/
+    ui/AddToCartButton.tsx
+    model/add-to-cart.ts  ← imports canPurchase from @/entities/product
     index.ts
-  profile/
-    ui/ProfilePanel.tsx
-    model/profile.ts      ← imports validateSession from entities/session
+  buy-now/
+    ui/BuyNowButton.tsx
+    model/buy-now.ts      ← imports the same canPurchase
     index.ts
 ```
 
-### Strategy C: Compose from an upper layer (IoC)
+### Strategy C: compose from an upper layer (IoC)
 
-Embedding pages, features, and entities into each other is possible, but the
-composition must happen in a higher layer. For example, a page can import
-multiple features and entities to compose a complete screen. When necessary,
-components can also be passed through props or children for composition.
-However, one feature must not directly import another feature according to
-the layer import rule.
+When several lower-layer modules have to take part in one composition,
+assemble them in a layer above all of them. A page can import multiple
+features and entities to compose a screen, and components can be passed
+through props or children where that helps. By default one feature does
+not import another; Strategy D below is the documented exception when
+that dependency cannot be removed.
 
 Instead of connecting slices within the same layer via cross-imports,
 compose them at a higher level (`pages` or `app`). The upper layer assembles
@@ -178,64 +183,66 @@ Common Inversion of Control techniques:
 #### Basic composition (React)
 
 ```typescript
-// features/user-profile/index.ts
-export { UserProfilePanel } from "./ui/UserProfilePanel";
+// features/follow-user/index.ts
+export { FollowButton } from "./ui/FollowButton";
 
-// features/activity-feed/index.ts
-export { ActivityFeed } from "./ui/ActivityFeed";
+// features/report-user/index.ts
+export { ReportUserButton } from "./ui/ReportUserButton";
 
-// pages/UserDashboardPage.tsx
-import { UserProfilePanel } from "@/features/user-profile";
-import { ActivityFeed } from "@/features/activity-feed";
+// pages/profile/ui/ProfilePage.tsx
+import { FollowButton } from "@/features/follow-user";
+import { ReportUserButton } from "@/features/report-user";
 
-export const UserDashboardPage = () => (
+export const ProfilePage = ({ userId }) => (
   <div>
-    <UserProfilePanel />
-    <ActivityFeed />
+    <FollowButton userId={userId} />
+    <ReportUserButton userId={userId} />
   </div>
 );
 ```
 
-`features/user-profile` and `features/activity-feed` do not know about each
-other. The page composes them.
+Following and reporting are two user actions that happen to sit on one
+screen. Neither knows the other exists; the page puts them there.
 
 #### Render props (React)
 
-When one feature needs to render content from another, use render props to
-invert the dependency:
+When one feature's UI has to place another feature's control inside it,
+use a render prop to invert the dependency:
 
 ```typescript
-// features/comment-list/ui/CommentList.tsx
-interface CommentListProps {
-  comments: Comment[];
-  renderUserAvatar?: (userId: string) => React.ReactNode;
+// features/manage-wishlist/ui/WishlistItems.tsx
+// RemoveButton is this feature's own ui/, not a cross-import.
+interface WishlistItemsProps {
+  items: WishlistItem[];
+  renderAddToCart?: (productId: string) => React.ReactNode;
 }
 
-export const CommentList = ({ comments, renderUserAvatar }: CommentListProps) => (
+export const WishlistItems = ({ items, renderAddToCart }: WishlistItemsProps) => (
   <ul>
-    {comments.map((comment) => (
-      <li key={comment.id}>
-        {renderUserAvatar?.(comment.userId)}
-        <span>{comment.text}</span>
+    {items.map((item) => (
+      <li key={item.id}>
+        <span>{item.title}</span>
+        <RemoveButton itemId={item.id} />
+        {renderAddToCart?.(item.productId)}
       </li>
     ))}
   </ul>
 );
 
-// pages/PostPage.tsx
-import { CommentList } from "@/features/comment-list";
-import { UserAvatar } from "@/features/user-profile";
+// pages/wishlist/ui/WishlistPage.tsx
+import { WishlistItems } from "@/features/manage-wishlist";
+import { AddToCartButton } from "@/features/add-to-cart";
 
-export const PostPage = () => (
-  <CommentList
-    comments={comments}
-    renderUserAvatar={(userId) => <UserAvatar userId={userId} />}
+export const WishlistPage = () => (
+  <WishlistItems
+    items={items}
+    renderAddToCart={(productId) => <AddToCartButton productId={productId} />}
   />
 );
 ```
 
-`CommentList` does not import from `user-profile`. The page injects the
-avatar component.
+`manage-wishlist` never imports `add-to-cart`. It leaves a hole per row,
+and the page fills it.
 
 #### Slots (Vue)
 
@@ -243,42 +250,52 @@ Vue's slot system provides a natural way to compose features without
 cross-imports:
 
 ```vue
-<!-- features/comment-list/ui/CommentList.vue -->
+<!-- features/manage-wishlist/ui/WishlistItems.vue -->
+<script setup lang="ts">
+defineProps<{ items: WishlistItem[] }>();
+</script>
+
 <template>
   <ul>
-    <li v-for="comment in comments" :key="comment.id">
-      <slot name="avatar" :userId="comment.userId" />
-      <span>{{ comment.text }}</span>
+    <li v-for="item in items" :key="item.id">
+      <span>{{ item.title }}</span>
+      <slot name="add-to-cart" :productId="item.productId" />
     </li>
   </ul>
 </template>
 
-<!-- pages/PostPage.vue -->
+<!-- pages/wishlist/ui/WishlistPage.vue -->
+<script setup lang="ts">
+import { WishlistItems } from "@/features/manage-wishlist";
+import { AddToCartButton } from "@/features/add-to-cart";
+</script>
+
 <template>
-  <CommentList :comments="comments">
-    <template #avatar="{ userId }">
-      <UserAvatar :userId="userId" />
+  <WishlistItems :items="items">
+    <template #add-to-cart="{ productId }">
+      <AddToCartButton :productId="productId" />
     </template>
-  </CommentList>
+  </WishlistItems>
 </template>
 ```
 
-### Strategy D: Cross-feature reuse only via Public API
+### Strategy D: cross-feature reuse only via Public API
 
-If strategies A-C do not fit and cross-feature reuse is genuinely
-unavoidable, allow it only through an explicit Public API (exported hooks
-or UI components). Do not access another slice's `store`, `model`, or
-internal implementation.
+If strategies A through C do not fit and cross-feature reuse is
+genuinely unavoidable, allow it only through an explicit Public API
+(exported hooks or UI components). Do not access another slice's
+`store`, `model`, or internal implementation.
 
-Unlike strategies A-C which aim to eliminate cross-imports, this strategy
-accepts them while minimizing risk through strict boundaries.
+Unlike strategies A through C, which aim to eliminate cross-imports,
+this strategy accepts them while minimizing risk through strict
+boundaries.
 
 ```typescript
 // features/auth/index.ts
 export { useAuth } from "./model/use-auth";
 export { AuthButton } from "./ui/AuthButton";
 
-// features/profile/ui/ProfileMenu.tsx
+// features/edit-profile/ui/ProfileMenu.tsx
 import { useAuth, AuthButton } from "@/features/auth";
 
 export const ProfileMenu = () => {
@@ -288,7 +305,7 @@ export const ProfileMenu = () => {
 };
 ```
 
-The boundary holds: `features/profile` cannot import from
+The boundary holds: `features/edit-profile` cannot import from
 `@/features/auth/model/internal/*`. Only what `features/auth` explicitly
 exposes through `index.ts` is reachable.
 
@@ -339,9 +356,14 @@ cross-import is introduced:
 Two slices on the same layer need to share code.
   │
   ├─ ENTITIES layer?
-  │   ├─ Can boundaries be merged into one entity?
+  │   ├─ Are they one cohesive domain boundary?
   │   │   └─ YES → Merge. Stop.
-  │   └─ Boundaries must stay separate?
+  │   ├─ Does either entity really need to know the other, or can a
+  │   │  page or feature hold both?
+  │   │   └─ Compose above them. Stop.
+  │   ├─ Is the shared part business-neutral infrastructure?
+  │   │   └─ YES → Move that part to shared/. Stop.
+  │   └─ Boundaries must stay separate and the domain dependency is real?
   │       └─ Use @x as last resort. Document why merge is not possible.
   │
   └─ FEATURES or WIDGETS layer?
@@ -371,8 +393,10 @@ Two slices on the same layer need to share code.
 - **Bypassing the Public API to access internals.** Even when Strategy D is
   in use, importing from `@/features/auth/model/internal/*` defeats the
   purpose. Restrict yourself to what `index.ts` exports.
-- **Bidirectional cross-imports.** A imports B and B imports A is almost
-  always a sign that the slices should be merged.
+- **Bidirectional cross-imports.** A imports B and B imports A says the
+  boundaries or the composition are wrong. Re-check whether the slices are
+  one boundary, whether the shared part belongs lower, or whether the
+  composition should move up.
 
 ## See also
 

@@ -5,14 +5,16 @@ on:
     paths:
       - "**/SKILL.md"
       - "**/references/**"
-      - ".github/scripts/validate-skills.mjs"
+      - "evals/**"
+      - ".github/scripts/**"
       - ".github/workflows/validate.yml"
   push:
     branches: [master]
     paths:
       - "**/SKILL.md"
       - "**/references/**"
-      - ".github/scripts/validate-skills.mjs"
+      - "evals/**"
+      - ".github/scripts/**"
       - ".github/workflows/validate.yml"
 
 permissions:
@@ -38,6 +40,11 @@ jobs:
       # and local reference paths.
       - name: Validate skill packages
         run: node .github/scripts/validate-skills.mjs
+
+      # The validator is regex over prose; prove it still catches what it
+      # claims to before trusting a green run.
+      - name: Test the validator
+        run: node --test .github/scripts/validate-skills.test.mjs
 
       # Verify that each skill can be installed through the official CLI.
       - name: Test skill install

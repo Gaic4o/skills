@@ -4,11 +4,16 @@ How to migrate to FSD v2.1 from either FSD v2.0 or a custom (non-FSD)
 architecture. This guide reflects the official `from-custom` step order:
 **pages first**, then everything else.
 
+The steps reveal where code already belongs; they are not a folder rename
+script. Where a step names a destination, the placement rules in
+`SKILL.md` still decide whether the code goes there.
+
 ## Part 1: FSD v2.0 → v2.1 (non-breaking)
 
 The v2.1 update emphasizes **"pages first"**: most logic stays in pages,
-reusable foundation in Shared. If reuse is needed across several pages,
-move it to a layer below. The migration is non-breaking and simplifies
+reusable foundation in Shared. When a stable responsibility is genuinely
+shared by several consumers and needs one authoritative home, move that
+responsibility to the layer below. The migration is non-breaking and simplifies
 the codebase by relocating single-use code back to where it is consumed.
 
 Another addition in v2.1 is the standardization of cross-imports between
@@ -25,20 +30,26 @@ npx steiger src
 
 Look for these rules:
 
-- **`insignificant-slice`**: an entity or feature used by only one page.
-  This rule will suggest merging that entity or feature into the page
-  entirely.
+- **`insignificant-slice`**: a slice with no references, or with one,
+  which it suggests merging into the layer above. Pages may have a single
+  reference without being flagged, and so may slices used only from `app`.
 - **`excessive-slicing`**: too many slices in a single layer.
 
 For each flagged slice, decide:
 
-- Reused in 2+ places → keep in features/entities.
-- Used only in one page → mark for migration back into that page.
+- Several consumers, a stable and focused responsibility, and a reason to
+  change of its own → leave it where it is.
+- One consumer → mark it to move back into that consumer.
+- Several consumers, but the copies would rather drift apart → local
+  copies may still be the better answer
+  (`references/growth-walkthrough.md`, Snapshot 1).
 
 ### Step 2. Move single-use code back to its consumer
 
-Take single-use features and entities and inline them into the consuming
-page (or widget if that is the single consumer):
+Move a single-reference feature or entity back into its sole consumer
+when the boundary no longer earns its own slice. That consumer is usually
+a page; it can be another feature, or an existing widget in a project that
+keeps its widgets layer:
 
 ```text
 // Before (v2.0): feature used by only one page
@@ -68,7 +79,7 @@ For each moved slice:
 
 ### Step 3. Keep genuinely reused code in place
 
-Code confirmed to be used in 2+ places stays in features/entities. Do not
+A slice that passed the check above stays in features/entities. Do not
 move it. The point of v2.1 is reducing premature extraction, not removing
 reuse.
 
@@ -77,8 +88,9 @@ reuse.
 The `processes` layer is deprecated. Migrate its code:
 
 - **Multi-page workflows** (checkout, onboarding wizard): move
-  orchestration logic to the page that initiates the workflow. If multiple
-  pages share workflow state, create a feature for it.
+  orchestration logic to the page that initiates the workflow. If the
+  workflow is a stable user-action boundary that several pages reuse, it
+  may become a feature.
 - **Background processes** (polling, sync): move to `app/` if global, or
   to the relevant page/feature if scoped.
 
@@ -89,13 +101,16 @@ processes/
   sync/model/background-sync.ts
 
 // After
-features/checkout/model/checkout-flow.ts    ← Used in 2+ pages
+features/checkout/model/checkout-flow.ts    ← Stable flow, reused
 app/sync/background-sync.ts                  ← Global concern
 ```
 
 ### Post-migration verification
 
-1. Run `npx steiger src`. All `insignificant-slice` warnings should be gone.
+1. Run `npx steiger src` and work through what it reports. For each
+   single-reference slice, decide whether the boundary is still
+   intentional or whether it survived only because it predates the
+   migration.
 2. Verify import directions. No upward or same-layer cross-imports.
 3. Check that no empty layer directories remain.
 4. Update documentation to reflect the new structure.
@@ -124,7 +139,7 @@ Migrate one widget per commit, updating its imports as you go. Delete the
 A half-empty widgets layer is fine in the meantime; import rules keep
 working throughout.
 
-## Part 2: Custom architecture → FSD
+## Part 2: custom architecture → FSD
 
 This part follows the official `from-custom` migration order. The core
 philosophy is **pages first**: start by dividing the code by pages, then
@@ -170,6 +185,10 @@ Pages may reference each other for now. Tackle that later. Focus on
 establishing a prominent division by pages.
 
 ### Step 2. Separate everything else from pages
+
+This step is a staging move, not the final ownership rule. Business
+code will land in `shared/` here, and Step 4 pulls it back out. Do not
+read "does not import pages" as a reason for code to live in Shared.
 
 Create `src/shared/` and move everything that does **not** import from
 `pages/` or `routes/` there. Create `src/app/` and move everything that
@@ -228,7 +247,7 @@ src/
       actions/, reducers/, selectors/, ui/   ← moved from shared
       index.js
     catalog/
-  shared/                                    ← only objects that are reused
+  shared/                                    ← shared infrastructure only
     actions/, api/, components/, ...
 ```
 
@@ -253,8 +272,12 @@ desegmentation principle.
 Reorganize each page to separate code by segments:
 
 - The existing page UI files become the `ui` segment.
-- Actions, reducers, and selectors become the `model` segment.
-- Thunks and mutations become the `api` segment.
+- Actions, reducers, selectors, and the rest of the state wiring become
+  the `model` segment.
+- Request functions become the `api` segment, and so does a thunk that
+  carries its own request. Once the request is separated out, the Redux
+  wiring left behind belongs with the reducer in `model`
+  (`references/state-management.md`).
 
 Reorganize the Shared layer too:
 
@@ -267,11 +290,15 @@ Reorganize the Shared layer too:
 
 ### Step 6. Form entities/features from Redux slices used on several pages
 
-Reused Redux slices typically describe business concepts (products, users)
-or user actions (comments, likes):
+A slice's subject does not settle its layer. Reused Redux slices typically
+describe business concepts (products, users) or user actions (comments,
+likes), and the official step says such a slice **can** move:
 
-- Business entities → **Entities layer**, one entity per folder.
-- User actions → **Features layer**.
+- A stable, reusable business-domain responsibility may become an entity,
+  one entity per folder.
+- A complete, reusable user interaction with a stable boundary may become
+  a feature.
+- Anything single-use or still unclear stays with the page that uses it.
 
 Entities and features are meant to be independent. If your business domain
 contains inherent connections between entities (a song belongs to an
@@ -282,19 +309,22 @@ API functions related to these slices can stay in `shared/api`.
 
 ### Step 7. Refactor your modules
 
-The `modules/` folder typically holds business logic, similar in nature to
-the Features layer. Some modules describe large UI chunks (an app header).
-Projects that keep a widgets layer can migrate these there. Otherwise place
-the composition where it is used: a screen-specific block stays in `pages/`,
-a reusable action plus its UI goes to `features/`, and an app-wide shell
-(header, footer) goes to `app/`.
+Do not map `modules/` onto `features/`. A legacy `modules/` folder usually
+holds several kinds of code at once, so read each module by its
+responsibility and its consumers: a screen-specific block stays in
+`pages/`, a reusable action plus its UI goes to `features/`, a stable
+reused domain rule goes to `entities/`, infrastructure goes to `shared/`,
+and an app-wide shell (header, footer) goes to `app/`. Some modules
+describe large UI chunks; a project that keeps its widgets layer can
+migrate those there.
 
 ### Step 8. Form a clean UI foundation in `shared/ui`
 
 `shared/ui` should contain UI elements with no encoded business logic.
 Refactor components from `components/` and `containers/` to extract their
-business logic to higher layers. If business logic is not used in many
-places, copy-pasting back to consumers is an acceptable choice.
+business logic to higher layers. Where no stable shared boundary has
+appeared and the copies can evolve apart, keeping the behavior local to
+each consumer is an acceptable choice.
 
 ## Common pitfalls during migration
 
