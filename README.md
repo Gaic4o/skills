@@ -85,9 +85,9 @@ node .github/scripts/validate-skills.mjs
 It enforces this repository's skill-package rules, which are based in part on the guidance in [vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills) `AGENTS.md`:
 
 - The `SKILL.md` body stays under 500 lines to keep the initial skill context lightweight. Frontmatter is excluded from the count.
-- The frontmatter `name` matches the skill's directory name.
-- The frontmatter contains a `description`.
-- Every `references/<file>.md` path mentioned in `SKILL.md` resolves to an existing file.
+- The frontmatter `name` matches the skill's directory name and is at most 64 characters.
+- The frontmatter contains a `description` of at most 1024 characters, the limits from the Agent Skills specification.
+- Every `references/<file>.md` path, whether written in `SKILL.md` or in another reference, resolves to an existing file.
 - Every file under `references/` is mentioned in `SKILL.md`, so no reference is orphaned.
 - Every numbered cross-reference resolves. `Section N`, `Section N-M`, and `Rule N-M` always mean a numbered heading in `SKILL.md`, whichever file mentions them; `Step N`, `Strategy X`, `Snapshot N`, `Part N`, and `Question N` mean a heading or bold label somewhere in the package.
 - A named rule such as "the request placement rule" that is cited from more than one file is a heading or bold label somewhere in the package, so renaming the anchor fails the build instead of stranding its readers.

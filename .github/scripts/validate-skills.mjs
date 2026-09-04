@@ -8,16 +8,24 @@ import { readFileSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-const ROOT = path.resolve(
+const DEFAULT_ROOT = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   "../..",
 );
 
 const SKILL_LINE_LIMIT = 500;
+// Limits from the Agent Skills specification for SKILL.md frontmatter.
+const NAME_LIMIT = 64;
+const DESCRIPTION_LIMIT = 1024;
 const REFERENCE_PATH_PATTERN = /\breferences\/([A-Za-z0-9._-]+\.md)\b/g;
 const IS_GITHUB_ACTIONS = process.env.GITHUB_ACTIONS === "true";
 
-let errorCount = 0;
+// Set by validateRepository for the duration of one run, so the helpers
+// below can stay free of parameter threading.
+let ROOT = DEFAULT_ROOT;
+let errors = [];
+let log = console.log;
+let logError = console.error;
 
 function isFile(filePath) {
   return statSync(filePath, { throwIfNoEntry: false })?.isFile() ?? false;
@@ -91,9 +99,8 @@ function findBodyStart(filePath, lines) {
 }
 
 function recordError(filePath, message, lineNumber) {
-  errorCount += 1;
-
   const relativePath = path.relative(ROOT, filePath).split(path.sep).join("/");
+  errors.push({ file: relativePath, message, line: lineNumber });
 
   if (IS_GITHUB_ACTIONS) {
     const location =
@@ -101,14 +108,14 @@ function recordError(filePath, message, lineNumber) {
         ? `file=${relativePath}`
         : `file=${relativePath},line=${lineNumber}`;
 
-    console.error(`::error ${location}::${message}`);
+    logError(`::error ${location}::${message}`);
     return;
   }
 
   const location =
     lineNumber === undefined ? relativePath : `${relativePath}:${lineNumber}`;
 
-  console.error(`ERROR  ${location}  ${message}`);
+  logError(`ERROR  ${location}  ${message}`);
 }
 
 function findSkillDirectories() {
@@ -140,7 +147,7 @@ function validateSkill(skillDirectory, documentsBySkill) {
   const bodyLength =
     bodyStart === null ? lines.length : lines.length - bodyStart;
 
-  console.log(
+  log(
     `  ${path.basename(skillDirectory)}/SKILL.md: ` +
       `${bodyLength} body lines`,
   );
@@ -161,6 +168,13 @@ function validateSkill(skillDirectory, documentsBySkill) {
 
     if (declaredName === null) {
       recordError(skillFile, "frontmatter is missing a name field", 1);
+    } else if (declaredName.length > NAME_LIMIT) {
+      recordError(
+        skillFile,
+        `frontmatter name is ${declaredName.length} characters; ` +
+          `the limit is ${NAME_LIMIT}`,
+        1,
+      );
     } else if (declaredName !== directoryName) {
       recordError(
         skillFile,
@@ -176,28 +190,49 @@ function validateSkill(skillDirectory, documentsBySkill) {
 
     if (description === null || description === "") {
       recordError(skillFile, "frontmatter is missing a description", 1);
+    } else {
+      log(`    description: ${description.length}/${DESCRIPTION_LIMIT} characters`);
+
+      if (description.length > DESCRIPTION_LIMIT) {
+        recordError(
+          skillFile,
+          `frontmatter description is ${description.length} characters; ` +
+            `the limit is ${DESCRIPTION_LIMIT}`,
+          1,
+        );
+      }
     }
   }
 
-  const mentionedReferences = new Set();
+  // Every `references/<file>.md` path, wherever it is written, must resolve.
+  // SKILL.md routes to the references; the references point at each other.
+  const mentionedInSkill = new Set();
 
-  for (const [index, line] of lines.entries()) {
-    for (const match of line.matchAll(REFERENCE_PATH_PATTERN)) {
-      const referenceName = match[1];
-      mentionedReferences.add(referenceName);
+  for (const filePath of documentFiles(skillDirectory)) {
+    const documentLines =
+      filePath === skillFile ? lines : readLines(filePath);
 
-      const referenceFile = path.join(
-        skillDirectory,
-        "references",
-        referenceName,
-      );
+    for (const [index, line] of documentLines.entries()) {
+      for (const match of line.matchAll(REFERENCE_PATH_PATTERN)) {
+        const referenceName = match[1];
 
-      if (!isFile(referenceFile)) {
-        recordError(
-          skillFile,
-          `references/${referenceName} does not exist`,
-          index + 1,
+        if (filePath === skillFile) {
+          mentionedInSkill.add(referenceName);
+        }
+
+        const referenceFile = path.join(
+          skillDirectory,
+          "references",
+          referenceName,
         );
+
+        if (!isFile(referenceFile)) {
+          recordError(
+            filePath,
+            `references/${referenceName} does not exist`,
+            index + 1,
+          );
+        }
       }
     }
   }
@@ -208,7 +243,7 @@ function validateSkill(skillDirectory, documentsBySkill) {
 
   if (statSync(referencesDirectory, { throwIfNoEntry: false })?.isDirectory()) {
     for (const entry of readdirSync(referencesDirectory)) {
-      if (entry.endsWith(".md") && !mentionedReferences.has(entry)) {
+      if (entry.endsWith(".md") && !mentionedInSkill.has(entry)) {
         recordError(
           path.join(referencesDirectory, entry),
           `references/${entry} is never mentioned in SKILL.md`,
@@ -239,7 +274,7 @@ const BOLD_LABEL_PATTERN = /^\s*(?:[-*>]\s+|\d+\.\s+)?\*\*(.+?)(?:\*\*|$)/;
 const SKILL_SCOPED_TOKEN_PATTERN =
   /\b(Sections?|Rules?)\s+(\d+(?:-\d+)?(?:(?:,\s*|,?\s+and\s+)\d+(?:-\d+)?)*)\b/g;
 const PACKAGE_SCOPED_TOKEN_PATTERN =
-  /\b(Steps?|Strateg(?:y|ies)|Snapshots?|Parts?|Questions?)\s+([A-D0-9](?:(?:,\s*|,?\s+and\s+)[A-D0-9])*)\b/g;
+  /\b(Steps?|Strateg(?:y|ies)|Snapshots?|Parts?|Questions?)\s+([A-Z0-9](?:(?:,\s*|,?\s+and\s+)[A-Z0-9])*)\b/g;
 const NAMED_RULE_PATTERN = /\bthe ((?:[a-z@][\w@/-]*\s+){1,3}rule)\b/gi;
 const QUOTED_PHRASE_PATTERN = /'([^']+)'|"([^"]+)"/g;
 
@@ -292,7 +327,7 @@ function collectAnchors(lines) {
     }
 
     const scoped = text.match(
-      /^(Step|Strategy|Snapshot|Part|Question)\s+([A-D0-9])\b/,
+      /^(Step|Strategy|Snapshot|Part|Question)\s+([A-Z0-9])\b/,
     );
 
     if (scoped !== null) {
@@ -454,7 +489,7 @@ function validateCrossReferences(skillDirectory, documents) {
     }
   }
 
-  console.log(
+  log(
     `  ${path.basename(skillDirectory)}: ` +
       `${referenceCount} numbered cross-reference(s) resolve`,
   );
@@ -574,7 +609,7 @@ function validateEvals(documentsBySkill) {
     return;
   }
 
-  console.log(`  evals/cases.json: ${cases.length} case(s)`);
+  log(`  evals/cases.json: ${cases.length} case(s)`);
 
   const required = ["id", "prompt", "expect", "why", "source", "rule"];
   const seen = new Set();
@@ -614,16 +649,29 @@ function validateEvals(documentsBySkill) {
   }
 }
 
-function main() {
+/**
+ * Validate the repository at `root`. Returns the list of problems found,
+ * each as { file, message, line }, and prints them through the given
+ * loggers. Tests call this on a mutated copy of the repository.
+ */
+export function validateRepository(root = DEFAULT_ROOT, options = {}) {
+  ROOT = root;
+  errors = [];
+  log = options.log ?? console.log;
+  logError = options.logError ?? console.error;
+
   const skillDirectories = findSkillDirectories();
 
   if (skillDirectories.length === 0) {
-    console.error("ERROR  no skill packages found; expected */SKILL.md");
-    process.exitCode = 1;
-    return;
+    errors.push({
+      file: ".",
+      message: "no skill packages found; expected */SKILL.md",
+    });
+    logError("ERROR  no skill packages found; expected */SKILL.md");
+    return errors;
   }
 
-  console.log(`Validating ${skillDirectories.length} skill package(s):`);
+  log(`Validating ${skillDirectories.length} skill package(s):`);
 
   const documentsBySkill = new Map();
 
@@ -632,9 +680,14 @@ function main() {
   }
 
   validateEvals(documentsBySkill);
+  return errors;
+}
 
-  if (errorCount > 0) {
-    console.error(`\n${errorCount} problem(s) found.`);
+function main() {
+  const problems = validateRepository();
+
+  if (problems.length > 0) {
+    console.error(`\n${problems.length} problem(s) found.`);
     process.exitCode = 1;
     return;
   }
@@ -642,4 +695,9 @@ function main() {
   console.log("\nAll checks passed.");
 }
 
-main();
+if (
+  process.argv[1] !== undefined &&
+  path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)
+) {
+  main();
+}
