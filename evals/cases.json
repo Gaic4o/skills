@@ -43,22 +43,6 @@
       "rule": "Strategy D; SKILL.md Rules 4-1 and 4-3"
     },
     {
-      "id": "widgets-adoption",
-      "prompt": "Should I add a widgets layer to this new project?",
-      "expect": "Discouraged. Screen-specific composition stays in pages, reused actions go to features, context-free UI to shared, app-wide layout to app.",
-      "why": "Must be presented as the official position, not as this skill's preference.",
-      "source": "feature-sliced-design/SKILL.md",
-      "rule": "Section 1 widgets callout"
-    },
-    {
-      "id": "technical-file-name",
-      "prompt": "Can I keep all my entity types in model/types.ts?",
-      "expect": "No. Use domain-based names such as model/user.ts and model/order.ts.",
-      "why": "Desegmentation check.",
-      "source": "feature-sliced-design/SKILL.md",
-      "rule": "Rule 4-4"
-    },
-    {
       "id": "shared-ui-import",
       "prompt": "How do I import the Button from the shared UI kit?",
       "expect": "@/shared/ui/Button, the component folder's own index. Not @/shared/ui/Button/Button.tsx.",
@@ -67,18 +51,10 @@
       "rule": "Rule 4-2"
     },
     {
-      "id": "business-logic-in-shared",
-      "prompt": "Is shared/lib/user-helpers.ts with calculateUserReputation acceptable?",
-      "expect": "No. A product rule computed over domain data belongs in entities/user/lib/ or higher.",
-      "why": "The positive half of the business-logic test.",
-      "source": "feature-sliced-design/SKILL.md",
-      "rule": "Rule 4-5"
-    },
-    {
       "id": "business-themed-in-shared",
       "prompt": "Can the company logo component and an autocomplete input live in shared/ui?",
       "expect": "Yes. Business-themed code and UI logic are both allowed in shared; only business logic is excluded.",
-      "why": "The negative half of the same test. An agent that over-applies Rule 4-5 fails this one.",
+      "why": "Rule 4-5 is easy to over-apply. Shared excludes business logic, but business-themed code and UI logic are explicitly allowed, and an agent that flattens the rule removes both.",
       "source": "feature-sliced-design/SKILL.md",
       "rule": "Section 2, Step 2"
     },
