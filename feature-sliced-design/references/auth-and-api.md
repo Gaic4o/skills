@@ -110,9 +110,10 @@ The official Auth guide presents two valid storage locations: **In Shared**
 `shared/auth` is the simpler default. Choose it when the project has no
 entities layer yet, or when auth state is just a token plus minimal user info.
 
-A `user` entity is the right call when the project already has an
-entities layer **and** auth and profile data are tightly coupled (profile
-reused for non-auth purposes like avatars in comments).
+A `user` entity is the right call when user-domain responsibilities hold
+a stable boundary outside the login flow, which usually shows up as
+profile data reused for non-auth purposes (avatars in comments). An
+existing entities layer is not itself a reason.
 
 ```text
 // Path A: shared/auth (simpler default)

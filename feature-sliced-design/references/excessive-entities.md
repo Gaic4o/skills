@@ -5,6 +5,10 @@ logic into entities. Excessive entities cause ambiguity (what code belongs
 where), coupling, and constant import dilemmas as code scatters across
 sibling entities.
 
+An entity is not where every reusable business concept goes. It is a
+stable, low-level domain boundary that several consumers genuinely have
+to share.
+
 ## Why this matters
 
 The `entities` layer is one of the lower layers and is widely accessible.
@@ -56,7 +60,7 @@ pages/profile/
   model/
     profile-validation.ts    ← page-specific for now
 
-// Iteration 2 (after the same logic is needed in 2+ places):
+// Iteration 2 (once several pages must share one copy of the rule):
 entities/profile/
   model/
     profile-validation.ts    ← extracted only after reuse is real
@@ -67,7 +71,9 @@ entities/profile/
 Do not create an entity for every piece of business logic. Use types from
 `shared/api` and place logic in the `model` segment of the current slice.
 For genuinely reusable business logic, use the `model` segment within an
-entity slice while keeping data definitions in `shared/api`.
+entity slice while the transport types stay in `shared/api`. That means
+the API shapes, `OrderDto` here; a type that exists because of a business
+rule can belong to the entity model once the entity does.
 
 ```text
 shared/
@@ -105,18 +111,23 @@ shared/
 ```
 
 For complex CRUD with atomic updates, rollbacks, or transactions, evaluate
-whether the operation is genuinely business logic. If so, the `entities`
-layer may be appropriate. If not, keep it in `shared/api`.
+whether the operation carries business rules. Complexity alone does not
+send it to `entities`: decide by what owns the rule. A checkout or a
+cancellation is a use case and belongs to a feature or the page that runs
+it; a rule the domain owns belongs to the entity; anything else stays in
+`shared/api`.
 
 ### 4. Store authentication data in shared
 
 Prefer `shared/auth` (or `shared/api`) over a `user` entity for tokens and
 session DTOs. They are specific to authentication, rarely reused outside
 it, and wrapping a login response in a `user` entity tends to pull the
-entity into `@x` chains. A `user` entity is the right call only when the
-project already has an entities layer and profile data is genuinely reused
-for non-auth purposes (avatars in comments, names in posts). Until then
-the entity is premature.
+entity into `@x` chains. A `user` entity earns its place when user-domain
+responsibilities hold a stable boundary outside the login flow, such as
+profile identity read across several product contexts (avatars in
+comments, names in posts). An entities layer that already exists is not
+itself a reason. Tokens and session state stay in `shared/auth` either
+way.
 
 Both folder shapes, when to split `shared/auth` from `shared/api`, and the
 three ways to expose the token to the API client are in
@@ -169,7 +180,8 @@ manage.
 A new piece of business logic needs a home.
   │
   ├─ Is the project a thin client?
-  │   └─ YES → Skip entities. Place in shared/ + page model.
+  │   └─ YES → Strong signal to start without entities. Keep reading
+  │            the branches below rather than stopping here.
   │
   ├─ Is the logic used in only one place right now?
   │   └─ YES → Keep in the consuming slice's model/. Defer extraction.
@@ -180,15 +192,16 @@ A new piece of business logic needs a home.
   ├─ Is it auth data (tokens, session, login DTOs)?
   │   ├─ Project has no entities layer yet?
   │   │   └─ YES → shared/auth/
-  │   ├─ Auth and profile data tightly coupled, entities layer exists?
-  │   │   └─ YES → entities/user/
+  │   ├─ Profile identity reused outside the login flow?
+  │   │   └─ YES → entities/user/ (tokens still shared/auth)
   │   └─ Otherwise → shared/auth/ (default).
   │       Avoid placing in a page, widget, or single feature slice.
   │
   ├─ Is it just a TypeScript type for an API response?
   │   └─ YES → shared/api/. No entity needed for types alone.
   │
-  └─ Is it reusable domain logic confirmed in 2+ consumers?
+  └─ Is it reused now, stable enough to name, and required to stay
+     consistent across its consumers?
       └─ YES → Create entities/<name>/model/.
                Verify the boundary is isolated and does not require @x
                to communicate with sibling entities.
@@ -196,8 +209,8 @@ A new piece of business logic needs a home.
 
 ## Anti-patterns
 
-- **Creating entities preemptively.** Wait for confirmed reuse in 2+
-  consumers, not anticipated reuse.
+- **Creating entities preemptively.** Wait for reuse that is real, has a
+  reason to change of its own, and needs one authoritative copy.
 - **Mirroring every API endpoint with an entity.** API endpoints belong in
   `shared/api`. Entities exist for business logic, not for paralleling the
   backend structure.
