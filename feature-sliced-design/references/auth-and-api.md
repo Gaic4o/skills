@@ -53,10 +53,15 @@ pages/login/                     ← Single-use
   api/login.ts                   ← POST /auth/login
   index.ts
 
-features/auth/                   ← Multi-use
-  ui/{LoginForm,RegisterForm}.tsx
+features/auth/                   ← Multi-use: signing in
+  ui/LoginForm.tsx
   model/auth.ts
-  api/{login,register}.ts
+  api/login.ts
+  index.ts
+features/register/               ← Signing up, its own use case
+  ui/RegisterForm.tsx
+  model/register.ts
+  api/register.ts
   index.ts
 ```
 
@@ -70,7 +75,7 @@ belong in the `features` layer because they handle user actions and flows.
 
 ```text
 features/
-  login/
+  auth/
     ui/LoginDialog.tsx
     model/
     api/
@@ -96,7 +101,7 @@ shared/
       Modal.tsx
       index.ts
 features/
-  login/
+  auth/
     ui/LoginDialog.tsx
     model/
     api/
