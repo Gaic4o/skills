@@ -11,8 +11,9 @@ script. Where a step names a destination, the placement rules in
 ## Part 1: FSD v2.0 → v2.1 (non-breaking)
 
 The v2.1 update emphasizes **"pages first"**: most logic stays in pages,
-reusable foundation in Shared. If reuse is needed across several pages,
-move it to a layer below. The migration is non-breaking and simplifies
+reusable foundation in Shared. When a stable responsibility is genuinely
+shared by several consumers and needs one authoritative home, move that
+responsibility to the layer below. The migration is non-breaking and simplifies
 the codebase by relocating single-use code back to where it is consumed.
 
 Another addition in v2.1 is the standardization of cross-imports between
@@ -45,9 +46,10 @@ For each flagged slice, decide:
 
 ### Step 2. Move single-use code back to its consumer
 
-Take single-use features and entities and inline them into the consuming
-page, or into an existing widget when the project keeps its widgets layer
-and that widget is the single consumer:
+Move a single-reference feature or entity back into its sole consumer
+when the boundary no longer earns its own slice. That consumer is usually
+a page; it can be another feature, or an existing widget in a project that
+keeps its widgets layer:
 
 ```text
 // Before (v2.0): feature used by only one page
@@ -86,8 +88,9 @@ reuse.
 The `processes` layer is deprecated. Migrate its code:
 
 - **Multi-page workflows** (checkout, onboarding wizard): move
-  orchestration logic to the page that initiates the workflow. If multiple
-  pages share workflow state, create a feature for it.
+  orchestration logic to the page that initiates the workflow. If the
+  workflow is a stable user-action boundary that several pages reuse, it
+  may become a feature.
 - **Background processes** (polling, sync): move to `app/` if global, or
   to the relevant page/feature if scoped.
 
@@ -98,14 +101,16 @@ processes/
   sync/model/background-sync.ts
 
 // After
-features/checkout/model/checkout-flow.ts    ← Used in 2+ pages
+features/checkout/model/checkout-flow.ts    ← Stable flow, reused
 app/sync/background-sync.ts                  ← Global concern
 ```
 
 ### Post-migration verification
 
-1. Run `npx steiger src` and resolve what it reports. No entity or feature
-   should remain that only one page uses.
+1. Run `npx steiger src` and work through what it reports. For each
+   single-reference slice, decide whether the boundary is still
+   intentional or whether it survived only because it predates the
+   migration.
 2. Verify import directions. No upward or same-layer cross-imports.
 3. Check that no empty layer directories remain.
 4. Update documentation to reflect the new structure.
@@ -242,7 +247,7 @@ src/
       actions/, reducers/, selectors/, ui/   ← moved from shared
       index.js
     catalog/
-  shared/                                    ← only objects that are reused
+  shared/                                    ← shared infrastructure only
     actions/, api/, components/, ...
 ```
 
@@ -317,8 +322,9 @@ migrate those there.
 
 `shared/ui` should contain UI elements with no encoded business logic.
 Refactor components from `components/` and `containers/` to extract their
-business logic to higher layers. If business logic is not used in many
-places, copy-pasting back to consumers is an acceptable choice.
+business logic to higher layers. Where no stable shared boundary has
+appeared and the copies can evolve apart, keeping the behavior local to
+each consumer is an acceptable choice.
 
 ## Common pitfalls during migration
 
