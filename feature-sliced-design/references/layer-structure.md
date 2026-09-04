@@ -360,9 +360,10 @@ export { Button } from './Button';
 export type { ButtonProps } from './Button';
 ```
 
-Shared **may** contain application-aware code (route constants, API endpoints,
-branding assets, common types). It must **never** contain business logic,
-feature-specific code, or entity-specific code.
+Shared **may** contain application-aware code: route constants, API
+endpoints, branding assets, and transport types such as `ProductDTO`.
+It must **never** hold the business rules an entity or feature owns, nor
+import from those layers.
 
 For asset placement specifically (images, icons, fonts, PDFs), see
 `references/asset-handling.md`.

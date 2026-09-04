@@ -42,8 +42,8 @@ FSD uses 6 standardized layers, listed here from highest to lowest:
 app/       → App initialization, providers, routing
 pages/     → Route-level composition, owns its own logic
 widgets/   → Reusable UI blocks (discouraged, see the callout below)
-features/  → Reusable user interactions (only when used in 2+ places)
-entities/  → Reusable business domain models (only when used in 2+ places)
+features/  → Reusable user interactions (see the extraction rule above)
+entities/  → Reusable business domain models (see the extraction rule above)
 shared/    → Infrastructure with no business logic (UI kit, utils, API client)
 ```
 
@@ -203,9 +203,10 @@ order in Section 7. Never reach into another slice's internals.
 
 ### 4-4. Domain-based file naming (no desegmentation)
 
-Name files after the business domain they represent, not their technical role.
-Technical-role names like `types.ts`, `utils.ts`, `helpers.ts` mix unrelated
-domains in a single file and reduce cohesion.
+Name files after what they are for, the domain or concern they serve, not
+after their technical role. Technical-role names like `types.ts`,
+`utils.ts`, `helpers.ts` mix unrelated concerns in a single file and
+reduce cohesion.
 
 ```text
 // BAD: technical-role naming
@@ -229,8 +230,9 @@ belong in `entities/` or higher layers. Section 2, Step 2 says what counts.
 // shared/lib/userHelpers.ts
 export const calculateUserReputation = (user) => { ... };
 
-// GOOD: move to the owning domain
-// entities/user/lib/reputation.ts
+// GOOD: move it to whoever owns the rule
+// pages/profile/model/reputation.ts       ← while the profile page owns it
+// entities/user/model/reputation.ts       ← once a user boundary is earned
 export const calculateUserReputation = (user) => { ... };
 ```
 
@@ -263,8 +265,7 @@ from it), so changes propagate widely.
 1. **Start without entities.** `shared/` + `pages/` + `app/` is valid FSD.
    Thin-client apps rarely need entities.
 2. **Do not split slices prematurely.** Keep code in pages. Extract to
-   entities only when the same code is currently used by multiple
-   consumers and the boundary is stable.
+   entities only when the Section 1 conditions hold.
 3. **Business logic does not automatically require an entity.** Keeping types
    in `shared/api` and logic in the current slice's `model/` segment may
    be sufficient.
@@ -286,8 +287,8 @@ src/
   shared/      ← UI kit, utils, API client
 
 // Add layers only when an actual use case requires them:
-// + features/  ← User interactions currently reused across multiple pages
-// + entities/  ← Domain models currently reused across pages or features
+// + features/  ← User-action boundaries that need one shared home
+// + entities/  ← Domain boundaries that need one shared home
 // (widgets/ is discouraged; see Section 1 for where that code goes instead)
 ```
 
@@ -310,8 +311,9 @@ npx steiger src
 
 - **Do not create entities prematurely.** Data structures used in only one
   place belong in that place.
-- **Do not put CRUD in entities.** Use `shared/api/`. Consider entities only
-  for complex transactional logic.
+- **Do not put CRUD in entities.** Plain CRUD is `shared/api/`. An
+  operation that carries business rules is placed by who owns the rule,
+  which may be an entity, a feature, or the page running the workflow.
 - **Do not create a `user` entity just for auth data.** Tokens and login DTOs
   belong in `shared/auth/` or `shared/api/`.
 - **Do not abuse `@x`.** It is a necessary compromise, not a recommended
@@ -428,12 +430,13 @@ segments only (no slices). Segments within shared may import from each other.
 - `api/`: API client, route constants, CRUD helpers, base types
 - `auth/`: Auth tokens, login utilities, session management
 - `config/`: Environment variables, app settings
-- `assets/`: Branding assets shared across the app (use sparingly; see
-  `references/asset-handling.md`)
+- Assets live with the code that uses them, not in an `assets/` segment.
+  See `references/asset-handling.md`.
 
-Shared **may** contain application-aware code (route constants, API endpoints,
-branding assets, common types). It must **never** contain business logic,
-feature-specific code, or entity-specific code.
+Shared **may** contain application-aware code: route constants, API
+endpoints, branding assets, and transport types such as `ProductDTO`.
+It must **never** hold the business rules an entity or feature owns, nor
+import from those layers.
 
 ## 10. Conditional references
 
