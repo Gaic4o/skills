@@ -63,7 +63,7 @@ pages/profile/
 // Iteration 2 (once several pages must share one copy of the rule):
 entities/profile/
   model/
-    profile-validation.ts    ← extracted only after reuse is real
+    profile-validation.ts    ← moved once the rule needs one home
 ```
 
 ### 2. Avoid unnecessary entities
@@ -130,8 +130,9 @@ entity into `@x` chains. A `user` entity earns its place when user-domain
 responsibilities hold a stable boundary outside the login flow, such as
 profile identity read across several product contexts (avatars in
 comments, names in posts). An entities layer that already exists is not
-itself a reason. Tokens and session state stay in `shared/auth` either
-way.
+itself a reason, and neither is profile reuse on its own. Tokens and the
+session stay in `shared/auth` unless an established entity genuinely owns
+that state.
 
 Both folder shapes, when to split `shared/auth` from `shared/api`, and the
 three ways to expose the token to the API client are in
@@ -195,12 +196,11 @@ A new piece of domain-related code or state needs a home.
   │   └─ Shared across consumers → shared/api/endpoints/<resource>.ts
   │
   ├─ Is it auth data (tokens, session, login DTOs)?
-  │   ├─ Project has no entities layer yet?
-  │   │   └─ YES → shared/auth/
-  │   ├─ Is there a stable user-domain responsibility outside
-  │   │  authentication that needs one shared home?
-  │   │   └─ YES → entities/user/ (tokens still shared/auth)
-  │   └─ Otherwise → shared/auth/ (default).
+  │   ├─ Does an established user or session entity already own this
+  │   │  state, rather than merely existing?
+  │   │   └─ YES → that entity's model/
+  │   └─ Otherwise → shared/auth/ (the default).
+  │       An entities layer existing is not a reason to move it.
   │       Avoid placing in a page, widget, or single feature slice.
   │
   ├─ Is it just a TypeScript type for an API response?

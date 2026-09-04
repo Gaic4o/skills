@@ -109,19 +109,20 @@ The official Auth guide presents two valid storage locations: **In Shared**
 (`shared/auth` or `shared/api`) and **In Entities** (a `user` entity).
 **In Pages/Widgets** is not recommended.
 
-`shared/auth` is the simpler default. Choose it when the project has no
-entities layer yet, or when auth state is just a token plus minimal user info.
+`shared/auth` is the default for tokens, refresh and expiry handling, and
+the rest of the authentication session. Keep them there unless something
+else already owns that state.
 
-A `user` entity is the right call when user-domain responsibilities hold
-a stable boundary outside the login flow, which usually shows up as
-profile data reused for non-auth purposes (avatars in comments). An
-existing entities layer is not itself a reason.
+A `user` or `session` entity may own auth state, token included, when that
+entity is an established boundary that genuinely owns it. Ownership is what
+decides. An entities layer existing, a `user` entity existing, and profile
+data being reused are not reasons to move credentials.
 
 ```text
 // Path A: shared/auth (simpler default)
 shared/auth/session.ts         ← userId, email, role, token
 
-// Path B: user entity (entities layer exists, profile reuse is real)
+// Path B: an established user-domain boundary that owns this state
 entities/user/
   model/
     current-user.ts            ← Current authenticated user + token

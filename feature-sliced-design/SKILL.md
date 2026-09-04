@@ -154,7 +154,7 @@ extraction rule holds.**
 | Scenario                   | Single use                                  | Confirmed multi-use                   |
 | -------------------------- | ------------------------------------------- | ------------------------------------- |
 | User profile form          | `pages/profile/ui/ProfileForm.tsx`          | `features/profile-form/`              |
-| Product card               | `pages/products/ui/ProductCard.tsx`         | `entities/product/ui/ProductCard.tsx` |
+| Product card               | `pages/products/ui/ProductCard.tsx`         | `entities/product/ui/` if the entity owns it |
 | API request (read or CRUD) | `pages/product-detail/api/fetch-product.ts` | `shared/api/` (no domain rules)       |
 | Auth token/session         | `shared/auth/`                              | `shared/auth/`                        |
 | Auth login form            | `pages/login/ui/LoginForm.tsx`              | `features/auth/`                      |
@@ -164,9 +164,9 @@ extraction rule holds.**
 | Date formatting util       |                                             | `shared/lib/format-date.ts`           |
 
 "Confirmed multi-use" means the extraction rule holds, not that a second
-consumer appeared. Two similar copies that keep drifting
-apart stay in their pages (`references/growth-walkthrough.md`,
-Snapshot 1).
+consumer appeared: two similar copies that keep drifting apart stay in
+their pages (`references/growth-walkthrough.md`, Snapshot 1). Entity UI
+carries the Section 6 caution even when the rule does hold.
 
 ## 4. Architectural rules (MUST)
 
@@ -374,8 +374,8 @@ entity boundaries together and increases refactoring cost.
 In `features` and `widgets`, choose based on context:
 
 - **Strategy A: slice merge.** Two slices always change together → merge.
-- **Strategy B: push to entities.** Shared domain logic → move to
-  `entities/`, keep UI in the feature.
+- **Strategy B: push to entities.** A shared domain responsibility → move
+  it to the entity that owns it, keep UI in the feature.
 - **Strategy C: compose from upper layer (IoC).** The parent (pages or app)
   imports both slices and connects them via render props, slots, or DI.
 - **Strategy D: Public API access.** When reuse is genuinely unavoidable,

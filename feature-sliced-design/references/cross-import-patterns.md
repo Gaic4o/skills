@@ -131,8 +131,8 @@ and cleaner choice.
 
 ### Strategy B: move a shared domain responsibility into an entity
 
-If multiple features share a domain-level flow, move that flow into a domain
-slice inside `entities`. Key principles:
+If multiple features share a domain rule or domain state, move that
+responsibility into the entity that owns it. Key principles:
 
 - What moves down is an established domain responsibility, not feature UI
   or user-flow orchestration.

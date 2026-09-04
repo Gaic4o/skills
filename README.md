@@ -16,6 +16,8 @@ Apply FSD v2.1 principles when structuring frontend projects. The agent learns l
 
 Its bias is pages-first: start with `app/`, `pages/`, and `shared/`, and open a features or entities boundary only when a stable shared responsibility has earned one. Code used in two places does not, by itself, earn a layer.
 
+It follows the official FSD v2.1 documentation but is not a verbatim copy. Where two official guides answer the same question differently, it picks one and says which. Where an integration guide has fallen behind a framework's own docs, it follows the framework. It also folds in recent maintainer guidance so an agent decides consistently across tasks. Passages that depart from a guide say so inline.
+
 **Use when:**
 
 - Setting up or reorganizing a frontend project structure
